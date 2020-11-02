@@ -9,9 +9,9 @@ int enablePin = 13;
 int lowPWM = 6554; // 10% from 65535 (16bit PWM)
 int highPWM = 58982; // 90% from 65535 (16bit PWM)
 int nullPWM = (highPWM + lowPWM) / 2; // Zero PWM for escons
-double ampPWM = nullPWM;
-double omega[3]; //escon angular velocities
-double manualAmps; //Used only for manual control
+float ampPWM = nullPWM;
+float omega[3]; //escon angular velocities
+float manualAmps; //Used only for manual control
 
 // set ledc params
 int freq = 10000; // PWM freq

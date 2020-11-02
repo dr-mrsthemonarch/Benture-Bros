@@ -1,4 +1,4 @@
-String getValue(String data, char separator, double index)
+String getValue(String data, char separator, float index)
 // read multiple values from string with : delimiter
 {
   int found = 0;
@@ -15,24 +15,24 @@ String getValue(String data, char separator, double index)
 }
 
 
-double pwmtoRPM(double pwm) {
+float pwmtoRPM(float pwm) {
   // calculate RPM from range of 0.1v to 3v 12 bit
-  double RPM = (8.53108 * pwm - 6594.5);
-  double rads = (0.1047197551 * RPM); // convert to rad*s^(-1)
+  float RPM = (8.53108 * pwm - 6594.5);
+  float rads = (0.1047197551 * RPM); // convert to rad*s^(-1)
   return rads;
 }
 
 
-double ampsToPWM(double sgnl) {
+float ampsToPWM(float sgnl) {
   // convert Amps to PWM signal
-  double thing;
+  float thing;
   thing = (((highPWM) - (lowPWM)) / 4.4) * sgnl + nullPWM;
   return thing;
 }
 
 
-void motor(double lqrSignal, int16_t channel) {
+void motor(float lqrSignal, int16_t channel) {
   //Set motor current input
-  double pwm = ampsToPWM(lqrSignal);
+  float pwm = ampsToPWM(lqrSignal);
   ledcWrite(channel, pwm);
 }
