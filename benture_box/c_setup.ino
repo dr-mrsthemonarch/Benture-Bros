@@ -1,18 +1,18 @@
 void setup()
 {
   //Start serial
-  Serial.begin(250000);
+  Serial.begin(115200);
+  // Serial.begin(250000);
   while (!Serial) {}
-
+  //  Wire.begin(23, 22);
   // start the mpus
   imuStatus[0] = IMU0.begin();
   imuStatus[1] = IMU1.begin();
   imuStatus[2] = IMU2.begin();
-/*
   imuStatus[3] = IMU3.begin();
   imuStatus[4] = IMU4.begin();
   imuStatus[5] = IMU5.begin();
-*/
+
   // start communication with IMU set accel and gyro ranges
   IMU0.setAccelRange(MPU9250::ACCEL_RANGE_2G);
   IMU0.setGyroRange(MPU9250::GYRO_RANGE_250DPS);
@@ -20,14 +20,13 @@ void setup()
   IMU1.setGyroRange(MPU9250::GYRO_RANGE_250DPS);
   IMU2.setAccelRange(MPU9250::ACCEL_RANGE_2G);
   IMU2.setGyroRange(MPU9250::GYRO_RANGE_250DPS);
-/*
   IMU3.setAccelRange(MPU9250::ACCEL_RANGE_2G);
   IMU3.setGyroRange(MPU9250::GYRO_RANGE_250DPS);
   IMU4.setAccelRange(MPU9250::ACCEL_RANGE_2G);
   IMU4.setGyroRange(MPU9250::GYRO_RANGE_250DPS);
   IMU5.setAccelRange(MPU9250::ACCEL_RANGE_2G);
   IMU5.setGyroRange(MPU9250::GYRO_RANGE_250DPS);
-*/
+
   /*
     imuStatus[0] = IMU0.calibrateAccel();
     imuStatus[1] = IMU1.calibrateAccel();
@@ -42,10 +41,10 @@ void setup()
   filter0.begin(100);
   filter1.begin(100);
   filter2.begin(100);
-//  filter3.begin(100);
-//  filter4.begin(100);
-//  filter5.begin(100);
-//  filternxp.begin(100);
+  filter3.begin(100);
+  filter4.begin(100);
+  filter5.begin(100);
+  //  filternxp.begin(100);
 
   for (int i = 0; i < 2; i++) {
 
@@ -85,12 +84,10 @@ void setup()
   digitalWrite(enablePin, LOW);
   pinMode(5, OUTPUT);
   digitalWrite(5, HIGH);
+
   //set up slave select pins as outputs as the Arduino API
   //doesn't handle automatically pulling CS low
   for (int i = 0; i < 5; i++) {
-
     pinMode(cs[i], OUTPUT);
-
   }
-
 }
