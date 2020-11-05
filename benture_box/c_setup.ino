@@ -37,14 +37,13 @@ void setup()
   */
 
   delay(200); // wait a bit
-  //start madgwick filters
+  //start madgwick filters, may be problems with Madgwick library not producing good results at high sampling rate. > 100
   filter0.begin(100);
   filter1.begin(100);
   filter2.begin(100);
   filter3.begin(100);
   filter4.begin(100);
   filter5.begin(100);
-  //  filternxp.begin(100);
 
   for (int i = 0; i < 2; i++) {
 
@@ -56,6 +55,7 @@ void setup()
 
     // escon requires 10% PWM signal to activate, set to nullPWM
     ledcWrite(ledChannel[i], nullPWM);
+ 
   }
 
   /*
@@ -86,7 +86,7 @@ void setup()
   digitalWrite(5, HIGH);
 
   //set up slave select pins as outputs as the Arduino API
-  //doesn't handle automatically pulling CS low
+  //doesn't handle automatically pulling CS low, IMU.begin() sets all CS pins high
   for (int i = 0; i < 5; i++) {
     pinMode(cs[i], OUTPUT);
   }

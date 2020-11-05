@@ -2,7 +2,7 @@
 void loop(void)
 {
   //=======================Update MPUS=============================================================================================================
-  
+
   // read the sensors
   IMU0.readSensor();
   IMU1.readSensor();
@@ -20,7 +20,7 @@ void loop(void)
     {IMU4.getAccelX_mss(), IMU4.getAccelY_mss(), IMU4.getAccelZ_mss()},
     {IMU5.getAccelX_mss(), IMU5.getAccelY_mss(), IMU5.getAccelZ_mss()},
   };
-  
+
   float getGyro[6][3] = {
     {IMU0.getGyroX_rads(), IMU0.getGyroY_rads(), IMU0.getGyroZ_rads()},
     {IMU1.getGyroX_rads(), IMU1.getGyroY_rads(), IMU1.getGyroZ_rads()},
@@ -29,7 +29,7 @@ void loop(void)
     {IMU4.getGyroX_rads(), IMU4.getGyroY_rads(), IMU4.getGyroZ_rads()},
     {IMU5.getGyroX_rads(), IMU5.getGyroY_rads(), IMU5.getGyroZ_rads()},
   };
-  
+
   float getMag[6][3] = {
     {IMU0.getMagX_uT(), IMU0.getMagY_uT(), IMU0.getMagZ_uT()},
     {IMU1.getMagX_uT(), IMU1.getMagY_uT(), IMU1.getMagZ_uT()},
@@ -38,7 +38,17 @@ void loop(void)
     {IMU4.getMagX_uT(), IMU4.getMagY_uT(), IMU4.getMagZ_uT()},
     {IMU5.getMagX_uT(), IMU5.getMagY_uT(), IMU5.getMagZ_uT()},
   };
-  
+
+  float axraw = IMU0.getAccelX_raw();
+  float axtest = (1.0007329F * (axraw / 65535) - 0.025653F) * 9.81F; //nxp cal method ai == w *raw/4096 + v
+
+  float ayraw = IMU0.getAccelY_raw();
+  float aytest = (0.9944161F * (ayraw / 65535) + 0.037144F) * 9.81F;
+
+  float azraw = IMU0.getAccelZ_raw();
+  float aztest = (1.0185F * (azraw / 65535) - 0.0481F) * 9.81F;
+
+
   // Apply magnetic offsets
   for (int j = 0; j < 6; j++) {
     for (int i = 0; i < 4; i++) {
@@ -54,7 +64,7 @@ void loop(void)
       }
     }
   }
-  
+
   // Apply gyroscope offsets
   for (int j = 0; j < 6; j++) {
     for (int i = 0; i < 4; i++) {
@@ -62,7 +72,7 @@ void loop(void)
     }
   }
 
-  // Update Madgwick filters with Sparkfun MPU9250, magZ must be inverted, check/test Bolder Library for transformation matrix tX[3],tY[3],tZ[3],  
+  // Update Madgwick filters with Sparkfun MPU9250, magZ must be inverted, check/test Bolder Library for transformation matrix tX[3],tY[3],tZ[3],
   // "transform the accel and gyro axes to match the magnetometer axes" Fix first if angles are inverted/rotated compared to magn.
   filter0.update(gyro[0][0], gyro[0][1], gyro[0][2], accel[0][0], accel[0][1], accel[0][2], mag[0][0], mag[0][1], -1 * mag[0][2]);
   filter1.update(gyro[1][0], gyro[1][1], gyro[1][2], accel[1][0], accel[1][1], accel[1][2], mag[1][0], mag[1][1], -1 * mag[1][2]);
@@ -80,7 +90,7 @@ void loop(void)
     {filter4.getRoll(), filter4.getPitch(),  filter4.getYaw()},
     {filter5.getRoll(), filter5.getPitch(),  filter5.getYaw()},
   };
-   // Call Quaterions
+  // Call Quaterions
   float qw, qx, qy, qz;
   filter0.getQuaternion(&qw, &qx, &qy, &qz);
 
@@ -108,9 +118,10 @@ void loop(void)
   manualControl = enable.toInt();
   manual(manualControl, v1, v2, v3);
 
+  //=============================Read Serial and Print data========================================================================================================
 
 
-  //Print Data to Serial
+  //Print Data to Serial for plotting/debugging
   Serial.print(eulerAngles[3][0]); // print in degrees
   Serial.print(",");
   Serial.print(eulerAngles[3][1]); // print in degrees
@@ -128,6 +139,7 @@ void loop(void)
   Serial.print(eulerAngles[5][1]); // print in degrees
   Serial.print(",");
   Serial.println(eulerAngles[5][2]); // print in degrees
+  
   // delay system for debugging.
   delay(10);
 }

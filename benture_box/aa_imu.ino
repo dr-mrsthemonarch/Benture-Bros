@@ -7,7 +7,7 @@ Madgwick filter3;
 Madgwick filter4;
 Madgwick filter5;
 
-// Set SPI channel and CS pins
+// Set SPI channel and CS pins for IMU communication
 int cs[6] = {27, 14, 32, 21, 25, 26};
 
 MPU9250 IMU0(SPI, cs[0]);
@@ -37,14 +37,14 @@ float mag_softiron_matrix[6][3][3] = {
   {{  0,  0,  0 }, {  0,  0,  0 }, {  0,  0,  0 }},
   {{  0,  0,  0 }, {  0,  0,  0 }, {  0,  0,  0 }},
   // IMUs, 21, 25,26
-  {{  1.036,  0.017,  -0.001 }, {  0.017,  0.954, -0.028 }, {  -0.001, 0.028,  1.013 }},
-  {{  1.031,  0.013,  -0.024 }, {  0.013,  0.897,  0.054 }, {  -0.024,  0.054,  1.085 }},
-  {{  1.057,  0.034,  0.017 }, {  0.034,  0.967,  0.038 }, {  0.017,  0.038,  0.981 }},
+  {{  1.036F,  0.017F,  -0.001F }, {  0.017F,  0.954F, -0.028F }, {  -0.001F, 0.028F,  1.013F }},
+  {{  1.031F,  0.013F,  -0.024F }, {  0.013F,  0.897F,  0.054F }, {  -0.024F,  0.054F,  1.085F }},
+  {{  1.057F,  0.034F,  0.017F }, {  0.034F,  0.967F,  0.038F }, {  0.017F,  0.038F,  0.981F }},
 };
 
-float mag_field_strength[3] = {38.52F, 37.24 , 38.58 };
+float mag_field_strength[3] = {38.52F, 37.24F , 38.58F };
 
-// Offsets applied to compensate for gyro zero-drift error for x/y/z
+// Offsets applied to compensate for gyro zero-drift error for x/y/z, sensor dependent
 float gyro_zero_offsets[6][3] = {
   { 0.0F, 0.0F, 0.0F },
   { 0.0F, 0.0F, 0.0F },
@@ -53,7 +53,7 @@ float gyro_zero_offsets[6][3] = {
   { 0.0F, 0.0F, 0.0F },
   { 0.0F, 0.0F, 0.0F },
 };
-// Used for calculating 'in between values' prior to passing to final mag array.
+// Used for calculating 'in between values' prior to passing to final mag array, sensor dependent
 float deltamag[6][3] = {
   { 0.0F, 0.0F, 0.0F },
   { 0.0F, 0.0F, 0.0F },
@@ -63,7 +63,7 @@ float deltamag[6][3] = {
   { 0.0F, 0.0F, 0.0F },
 };
 
-// Following arrays should always be constant and final values to be given to Magdwick filters, sensor agnostic.
+// Following array names should always be constant and final values to be given to Magdwick filters, sensor agnostic.
 float gyro[6][3] = {
   { 0.0F, 0.0F, 0.0F },
   { 0.0F, 0.0F, 0.0F },
