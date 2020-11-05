@@ -1,4 +1,5 @@
-/* Used for mag, accel,gryo, motor calibration
+/*
+// Used for mag, accel,gryo, motor calibration, consider changing for state machine
 
 void loop(void)
 {

@@ -62,7 +62,8 @@ void loop(void)
     }
   }
 
-  // Update Madgwick filters with Sparkfun MPU9250, magZ must be inverted.
+  // Update Madgwick filters with Sparkfun MPU9250, magZ must be inverted, check/test Bolder Library for transformation matrix tX[3],tY[3],tZ[3],  
+  // "transform the accel and gyro axes to match the magnetometer axes" Fix first if angles are inverted/rotated compared to magn.
   filter0.update(gyro[0][0], gyro[0][1], gyro[0][2], accel[0][0], accel[0][1], accel[0][2], mag[0][0], mag[0][1], -1 * mag[0][2]);
   filter1.update(gyro[1][0], gyro[1][1], gyro[1][2], accel[1][0], accel[1][1], accel[1][2], mag[1][0], mag[1][1], -1 * mag[1][2]);
   filter2.update(gyro[2][0], gyro[2][1], gyro[2][2], accel[2][0], accel[2][1], accel[2][2], mag[2][0], mag[2][1], -1 * mag[2][2]);

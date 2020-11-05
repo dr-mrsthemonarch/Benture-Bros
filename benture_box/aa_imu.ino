@@ -32,10 +32,11 @@ float mag_offsets[6][3] = {
 
 // Soft iron error compensation matrix
 float mag_softiron_matrix[6][3][3] = {
+  // IMUs 27, 14, 32
   {{  0,  0,  0 }, {  0,  0,  0 }, {  0,  0,  0 }},
   {{  0,  0,  0 }, {  0,  0,  0 }, {  0,  0,  0 }},
   {{  0,  0,  0 }, {  0,  0,  0 }, {  0,  0,  0 }},
-  //
+  // IMUs, 21, 25,26
   {{  1.036,  0.017,  -0.001 }, {  0.017,  0.954, -0.028 }, {  -0.001, 0.028,  1.013 }},
   {{  1.031,  0.013,  -0.024 }, {  0.013,  0.897,  0.054 }, {  -0.024,  0.054,  1.085 }},
   {{  1.057,  0.034,  0.017 }, {  0.034,  0.967,  0.038 }, {  0.017,  0.038,  0.981 }},
@@ -52,7 +53,7 @@ float gyro_zero_offsets[6][3] = {
   { 0.0F, 0.0F, 0.0F },
   { 0.0F, 0.0F, 0.0F },
 };
-
+// Used for calculating 'in between values' prior to passing to final mag array.
 float deltamag[6][3] = {
   { 0.0F, 0.0F, 0.0F },
   { 0.0F, 0.0F, 0.0F },
@@ -61,6 +62,8 @@ float deltamag[6][3] = {
   { 0.0F, 0.0F, 0.0F },
   { 0.0F, 0.0F, 0.0F },
 };
+
+// Following arrays should always be constant and final values to be given to Magdwick filters, sensor agnostic.
 float gyro[6][3] = {
   { 0.0F, 0.0F, 0.0F },
   { 0.0F, 0.0F, 0.0F },
