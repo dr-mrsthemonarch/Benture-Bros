@@ -31,9 +31,9 @@ float ampsToPWM(float sgnl) {
 }
 
 
-void motor(float lqrSignal, int16_t channel) {
+void motorControl(float sgnl, int16_t channel) {
   //Set motor current input
-  float pwm = ampsToPWM(lqrSignal);
+  float pwm = ampsToPWM(sgnl);
   ledcWrite(channel, pwm);
 }
 

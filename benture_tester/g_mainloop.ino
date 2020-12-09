@@ -90,13 +90,14 @@ void loop(void)
   //=======================Update Motor angular velocities=============================================================================================================
 
   // Read TI ADS1015
-  adc[0] = readADC(0);
-  //  adc[1] = readADC(1);
-  //  adc[2] = readADC(2);
+  //adc[0] = readADC(0);
+  //adc[1] = readADC(1);
+  adc[2] = readADC(3);
+
   //Update Omega Array
-  omega[0] = pwmtoRPM(adc[0]);
-  //  omega[1] = pwmtoRPM(adc[1]);
-  //  omega[2] = pwmtoRPM(adc[2]);
+  //omega[0] = pwmtoRPM(adc[0]);
+  //omega[1] = pwmtoRPM(adc[1]);
+  omega[2] = pwmtoRPM(adc[2]);
 
   //=============================Read Serial and Print data========================================================================================================
 
@@ -143,22 +144,22 @@ void loop(void)
     float azraw = IMU3.getAccelZ_raw();
     float aztest = (0.964973F * (azraw / 16384) + 0.00150979F) * 9.807F;
   */
-/*
-  Serial.print(getAccel[3][0]);
-  Serial.print(",");
-  Serial.print(getAccel[3][1]);
-  Serial.print(",");
-  Serial.print(getAccel[3][2]);
-  Serial.print(",");
-  Serial.print(axtest);
-  Serial.print(",");
-  Serial.print(aytest);
-  Serial.print(",");
-  Serial.println(aztest);
+  /*
+    Serial.print(getAccel[3][0]);
+    Serial.print(",");
+    Serial.print(getAccel[3][1]);
+    Serial.print(",");
+    Serial.print(getAccel[3][2]);
+    Serial.print(",");
+    Serial.print(axtest);
+    Serial.print(",");
+    Serial.print(aytest);
+    Serial.print(",");
+    Serial.println(aztest);
   */
 
-  Serial.println(adc[0]);
+  Serial.println(omega[2]);
 
   // delay system for debugging.
-  delay(10);
+  delay(7);
 }
