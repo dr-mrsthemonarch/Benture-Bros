@@ -80,7 +80,7 @@ void getRPYCB(cmd* cmdPtr) {
   Argument argOff   = cmd.getArgument("off");
   Argument argOn    = cmd.getArgument("on");
 
-  Argument argCS    = cmd.getArgument("cs");
+  Argument argCS    = cmd.getArgument("c");
   String pin        = argCS.getValue();
   int csPin         = pin.toInt();
 
@@ -148,7 +148,7 @@ void getAccelRawCB(cmd* cmdPtr) {
   Argument argOff   = cmd.getArgument("off");
   Argument argOn    = cmd.getArgument("on");
 
-  Argument argCS    = cmd.getArgument("cs");
+  Argument argCS    = cmd.getArgument("c");
   String pin        = argCS.getValue();
   int csPin         = pin.toInt();
 
@@ -216,7 +216,7 @@ void getAccelMssCB(cmd* cmdPtr) {
   Argument argOff   = cmd.getArgument("off");
   Argument argOn    = cmd.getArgument("on");
 
-  Argument argCS    = cmd.getArgument("cs");
+  Argument argCS    = cmd.getArgument("c");
   String pin        = argCS.getValue();
   int csPin         = pin.toInt();
 
@@ -279,6 +279,7 @@ void getAccelMssCB(cmd* cmdPtr) {
     }
   }
 }
+
 void getMargCB(cmd* cmdPtr) {
   Command cmd(cmdPtr); // get arguments
   Argument argOff   = cmd.getArgument("off");

@@ -23,12 +23,12 @@ void cs27PrintRPY_Rads();
 void cs32PrintRPY_Rads();
 void cs25PrintRPY_Rads();
 //========================== Marg
-void cs26Marg();
-void cs14Marg();
-void cs21Marg();
-void cs27Marg();
-void cs32Marg();
-void cs25Marg();
+void cs26PrintMarg();
+void cs14PrintMarg();
+void cs21PrintMarg();
+void cs27PrintMarg();
+void cs32PrintMarg();
+void cs25PrintMarg();
 
 void taskCalculateRPY();
 void blinkCB();
@@ -43,12 +43,12 @@ void taskReadSerial();
 //Tasks to always run
 Task blinker(500, TASK_FOREVER, &blinkCB);
 //Task probeADC(10, TASK_FOREVER, &taskADC);
-Task angleCalculateRPY(1, TASK_FOREVER, &taskCalculateRPY);
-Task angleCalculateRPY_Rads(1, TASK_FOREVER, &taskCalculateRPY_Rads);
+Task angleCalculateRPY(3, TASK_FOREVER, &taskCalculateRPY);
+Task angleCalculateRPY_Rads(3, TASK_FOREVER, &taskCalculateRPY_Rads);
 
 //Dynamic Tasks
 Task sensorReady(50, 50, &readyLED);
-Task converger(5, TASK_FOREVER, &taskConverge);
+Task converger(11, TASK_FOREVER, &taskConverge);
 Task serialRead(7, TASK_FOREVER, &taskReadSerial);
 
 Task cs26_RPY(5, TASK_FOREVER, &cs26PrintRPY_Rads);
@@ -72,12 +72,12 @@ Task cs27_Accel_Mss(10, TASK_FOREVER, &cs27PrintAccel_Mss);
 Task cs32_Accel_Mss(10, TASK_FOREVER, &cs32PrintAccel_Mss);
 Task cs25_Accel_Mss(10, TASK_FOREVER, &cs25PrintAccel_Mss);
 
-Task cs26_Marg(50, TASK_FOREVER, &cs26Marg);
-Task cs14_Marg(50, TASK_FOREVER, &cs14Marg);
-Task cs21_Marg(50, TASK_FOREVER, &cs21Marg);
-Task cs27_Marg(50, TASK_FOREVER, &cs27Marg);
-Task cs32_Marg(50, TASK_FOREVER, &cs32Marg);
-Task cs25_Marg(50, TASK_FOREVER, &cs25Marg);
+Task cs26_Marg(50, TASK_FOREVER, &cs26PrintMarg);
+Task cs14_Marg(50, TASK_FOREVER, &cs14PrintMarg);
+Task cs21_Marg(50, TASK_FOREVER, &cs21PrintMarg);
+Task cs27_Marg(50, TASK_FOREVER, &cs27PrintMarg);
+Task cs32_Marg(50, TASK_FOREVER, &cs32PrintMarg);
+Task cs25_Marg(50, TASK_FOREVER, &cs25PrintMarg);
 
 
 Scheduler runner;
@@ -177,15 +177,25 @@ void taskCalculateRPY() {
 void taskCalculateRPY_Rads() {
   for (int i = 0 ; i < 2; i++) {
     rpyValues[i] = testing[i].calculateRPYRadians();
+    phiRPY[i] = sensorOffset(1, rpyValues[0][i], rpyValues[1][i]); //angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
     gyroValues[i] = testing[i].getGyro();
     accelValuesRaw[i] = testing[i].getAccelRaw();
     accelValuesMss[i] = testing[i].getAccelMss();
     magValues[i] = testing[i].getMag();
   }
 }
-void taskCalibrateMARG() {
 
-}
+void taskUpdateLQR(){
+  updateLQR(lqrPhi,plantPhi);
+  updateLQR(lqrTheta,plantTheta);
+  updateLQR(lqrPsi,plantPsi);
+  }
+void taskUpdateMotor(){
+  motorControl(0,u[0]); //update Phi
+  motorControl(1,u[1]); //update Theta
+  motorControl(2,u[2]); //update Psi
+  }
+
 //=========== Task Helper Functions ===========
 
 void testConverge(int pin, int iteration, float range, float dt ) {
@@ -248,6 +258,11 @@ void blinkCB() {
     LEDOn();
     LED_state = true;
   }
+}
+
+void taskLQR() {
+
+
 }
 
 //========================== RPY in Rads
@@ -324,26 +339,32 @@ void cs25PrintAccel_Mss() {
   taskPrintAccel_Mss(cs25);
 }
 //========================== MARG For Calibration
-void cs26Marg() {
+void cs26PrintMarg() {
   taskPrintMarg(cs26);
 }
 
-void cs14Marg() {
+void cs14PrintMarg() {
   taskPrintMarg(cs14);
 }
 
-void cs21Marg() {
+void cs21PrintMarg() {
   taskPrintMarg(cs21);
 }
 
-void cs27Marg() {
+void cs27PrintMarg() {
   taskPrintMarg(cs27);
 }
 
-void cs32Marg() {
+void cs32PrintMarg() {
   taskPrintMarg(cs32);
 }
 
-void cs25Marg() {
+void cs25PrintMarg() {
   taskPrintMarg(cs25);
+}
+
+//========================== LQR Functions
+void LQRPhi() {
+
+
 }

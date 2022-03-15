@@ -60,7 +60,7 @@ void setup() {
   cmdGetAccelMss.addArgument("c");
 
   cmdGetRPY = cli.addCommand("getRPY", getRPYCB);
-  cmdGetRPY.setDescription("Get Meters per Second Second accelerometer Data");
+  cmdGetRPY.setDescription("Get Roll Pitch Yaw Data in Radians");
   cmdGetRPY.addFlagArgument("e/nable,on");
   cmdGetRPY.addFlagArgument("d/isable,off");
   cmdGetRPY.addArgument("c");
