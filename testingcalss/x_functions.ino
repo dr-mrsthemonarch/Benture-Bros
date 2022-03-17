@@ -1,6 +1,6 @@
 
 // Only Helper Functions
-void schedularOnOff(int sensorSelect) {
+void schedulerOnOff(int sensorSelect) {
   if (sensorSelect < 6) {
     switch (sensorSelect) {
       case 3:
@@ -50,7 +50,7 @@ void parser() {
     Command cmd = cli.getCmd();
   }
 }
-float pwmToRPM(float voltage) {
+float pwmToRads(float voltage) {
   // calculate RPM from range of 0.1v to 3v 12 bit
   float RPM = (8.53108 * voltage - 6594.5);
   float rads = (0.1047197551 * RPM); // convert to rad*s^(-1)
@@ -85,12 +85,14 @@ void startLEDC() {
 void taskSensorOffset() {
   for (int i = 0; i < 3; i++) {
     phiRPY[i] = sensorOffset(1, rpyValues[0][i], rpyValues[1][i]); //angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
-    thetaRPY[i] = sensorOffset(1, rpyValues[2][i], rpyValues[3][i]); //not required for breadboardtestbench
-    psiRPY[i] = sensorOffset(1, rpyValues[4][i], rpyValues[5][i]);
+    //    thetaRPY[i] = sensorOffset(1, rpyValues[2][i], rpyValues[3][i]); //not required for breadboardtestbench
+    //    psiRPY[i] = sensorOffset(1, rpyValues[4][i], rpyValues[5][i]);
+    psiRPY[i] = 0;
+    thetaRPY[i] = 0;
   }
 }
 
-float updateLQR(const Vector3f& lqr, const Vector3f& plant) {
+float updateLQR(Vector3f& lqr, const Vector3f& plant) {
   float sol;
   sol = lqr.dot(plant);
   return sol;

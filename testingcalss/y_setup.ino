@@ -12,6 +12,7 @@ void setup() {
       ;
     }
   */
+
   delay(100);
   pinMode(LED_BUILTIN, OUTPUT);
   testing[0].setup();
@@ -24,12 +25,6 @@ void setup() {
   ///===================================================== SimpleCLI stuff
   //Code failes unless comamnds added within setup()
   cli.setOnError(errorCallback);
-  cmdPing = cli.addCommand("ping", pingCallback);
-  cmdPing.addPositionalArgument("str", "pong");
-  cmdPing.addArgument("n/um/ber,anzahl", "1");
-  cmdPing.addFlagArgument("c");
-
-  cmdPong = cli.addBoundlessCommand("pong,hello", pongCallback);
 
   cmdHelp = cli.addCommand("help", helpCB);
   cmdHelp.setDescription("Lists available commands and flags");
@@ -60,10 +55,16 @@ void setup() {
   cmdGetAccelMss.addArgument("c");
 
   cmdGetRPY = cli.addCommand("getRPY", getRPYCB);
-  cmdGetRPY.setDescription("Get Roll Pitch Yaw Data in Radians");
+  cmdGetRPY.setDescription("Get Roll, Pitch, and Yaw Data in Radians");
   cmdGetRPY.addFlagArgument("e/nable,on");
   cmdGetRPY.addFlagArgument("d/isable,off");
   cmdGetRPY.addArgument("c");
+
+  cmdGetGyro = cli.addCommand("getGyro", getGyroCB);
+  cmdGetGyro.setDescription("Get Gyro Data in Roll, Pitch, Yaw in Rad/s");
+  cmdGetGyro.addFlagArgument("e/nable,on");
+  cmdGetGyro.addFlagArgument("d/isable,off");
+  cmdGetGyro.addArgument("c");
 
   cmdGetMarg = cli.addCommand("getMarg", getMargCB);
   cmdGetMarg.setDescription("Get Calibration Data for MotionCal, requires baud 115200");
@@ -71,16 +72,48 @@ void setup() {
   cmdGetMarg.addFlagArgument("d/isable,off");
   cmdGetMarg.addArgument("c");
 
+  cmdGetPlant = cli.addCommand("getPlant", getPlantCB);
+  cmdGetPlant.setDescription("Get Pi Subsystem SIMO Data, Rad_i, Rad_i/s, Omega_i");
+  cmdGetPlant.addFlagArgument("e/nable,on");
+  cmdGetPlant.addFlagArgument("d/isable,off");
+  cmdGetPlant.addArgument("s");
+
+  cmdLQR = cli.addCommand("lqr", lqrCB);
+  cmdLQR.setDescription("Turn on LQR Controllers, print Controller Output, set Gain values");
+  cmdLQR.addFlagArgument("e/nable,on");
+  cmdLQR.addFlagArgument("d/isable,off");
+  cmdLQR.addFlagArgument("c");
+  cmdLQR.addFlagArgument("p/rint");
+
+
+  modLQR = cli.addCommand("lqrSet", lqrSetCB);
+  modLQR.setDescription("Modify lqr gains for subsystem p_i");
+  modLQR.addArgument("k1");
+  modLQR.addArgument("k2");
+  modLQR.addArgument("k3");
+  modLQR.addArgument("p");
+
+
+
 
   ///===================================================== Taskscheduler stuff
   runner.init();
-  //  runner.addTask(probeADC);
+
   runner.addTask(serialRead);
-  runner.addTask(angleCalculateRPY_Rads);
   runner.addTask(blinker);
   runner.addTask(converger);
+
+  //  runner.addTask(probeADC);
+  runner.addTask(angleCalculateRPY_Rads);
+  runner.addTask(plantCalculate);
+  runner.addTask(motorDriver);
+  runner.addTask(controller);
+  
+
   angleCalculateRPY_Rads.enable();
   converger.enable();
+  plantCalculate.enable();
+  controller.enable();
   serialRead.enable();
   //  probeADC.enable();
 }

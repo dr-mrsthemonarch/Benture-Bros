@@ -2,13 +2,16 @@
 
 Command cmdMotor;
 Command cmdConverge;
-Command cmdPing;
-Command cmdPong;
 Command cmdHelp;
 Command cmdGetAccelRaw;
 Command cmdGetAccelMss;
+Command cmdGetGyro;
 Command cmdGetRPY;
 Command cmdGetMarg;
+Command cmdGetPlant;
+Command cmdLQR;
+Command modLQR;
+
 // https://github.com/SpacehuhnTech/SimpleCLI#examples
 // Commands must be initiated as global void with cmd* Prt, Bare Minimum example:
 // void example(cmd * Pointer){
@@ -33,40 +36,9 @@ void helpCB(cmd* ptr) {
   Serial.println("Help:");
   Serial.println(cli.toString());
 }
-void pongCallback(cmd* cmdPtr) {
-  Command cmd(cmdPtr);
-
-  int argNum = cmd.countArgs();
-
-  for (int i = 0; i < argNum; i++) {
-    Serial.println(cmd.getArgument(i).getValue());
-  }
-}
-
-void pingCallback(cmd* cmdPtr) {
-  Command cmd(cmdPtr);
-
-  Argument argN   = cmd.getArgument("num");
-  String   argVal = argN.getValue();
-  int n           = argVal.toInt();
-
-  Argument argStr = cmd.getArgument("str");
-  String   strVal = argStr.getValue();
-
-  Argument argC = cmd.getArgument("c");
-  bool     c    = argC.isSet();
-
-  if (c) strVal.toUpperCase();
-
-  for (int i = 0; i < n; i++) {
-    Serial.println(strVal);
-  }
-}
-
-
 
 void convergeCB(cmd* cmdPtr) {
-  Command cmd(cmdPtr); // do nothing, required for creating command
+  Command cmd(cmdPtr); // does nothing, required for creating command
   blinker.disable();
   LED_state = false;
   LEDOff();
@@ -74,6 +46,99 @@ void convergeCB(cmd* cmdPtr) {
   converger.enable();
   Serial.println("command accepted");
 }
+
+void lqrCB(cmd* cmdPtr) {
+  Command cmd(cmdPtr);// get arguments
+  Argument argOff   = cmd.getArgument("off"); //turn off printing
+  Argument argOn    = cmd.getArgument("on"); //turn on printing
+  Argument argC     = cmd.getArgument("c"); //turn on/off controller with on argument
+
+  Argument argPrint = cmd.getArgument("p/rint");
+
+  bool c            = argC.isSet();
+  bool printer      = argPrint.isSet();
+  bool lqrOn        = argOn.isSet();
+  bool lqrOff       = argOff.isSet();
+
+  if (lqrOn && printer) {
+    runner.addTask(printU);
+    printU.enable();
+  } else if (lqrOff && printer) {
+    printU.disable();
+    runner.deleteTask(printU);
+  } else if (lqrOn && c) {
+    motorDriver.enable();
+  } else if (lqrOff && c) {
+    motorDriver.disable();
+  }
+}
+
+void lqrSetCB(cmd* cmdPtr) {
+  Command cmd(cmdPtr);// get arguments
+
+  Argument argK1    = cmd.getArgument("k1");
+  String k1         = argK1.getValue();
+  float gain1       = k1.toInt();
+
+  Argument argK2    = cmd.getArgument("k2");
+  String k2         = argK2.getValue();
+  float gain2       = k2.toInt();
+
+  Argument argK3    = cmd.getArgument("k3");
+  String k3         = argK3.getValue();
+  float gain3       = k3.toInt();
+
+  Argument argSub   = cmd.getArgument("p");
+  String subp       = argSub.getValue();
+  int pi            = subp.toInt();
+  bool gainSet      = argSet.isSet();
+
+  if (gainSet) {
+    switch (pi) {
+      case 0:
+        lqrPhi(0) = gain1;
+        lqrPhi(1) = gain2;
+        lqrPhi(2) = gain3;
+        Serial.print(lqrPhi(0));
+        Serial.print(",");
+        Serial.print(lqrPhi(1));
+        Serial.print(",");
+        Serial.println(lqrPhi(2));
+        break;
+      case 1:
+        lqrTheta(0) = gain1;
+        lqrTheta(1) = gain2;
+        lqrTheta(2) = gain3;
+        Serial.print(lqrTheta(1));
+        Serial.print(",");
+        Serial.print(lqrTheta(2));
+        Serial.print(",");
+        Serial.println(lqrTheta(2));
+        break;
+      case 2:
+        lqrPsi(0) = gain1;
+        lqrPsi(1) = gain2;
+        lqrPsi(2) = gain3;
+        Serial.print(lqrPsi(0));
+        Serial.print(",");
+        Serial.print(lqrPsi(1));
+        Serial.print(",");
+        Serial.println(lqrPsi(2));
+        break;
+    }
+  }
+}
+/*
+  use cases
+  lqr -on -print        turn on all controller values printing
+  lqr -off -print       turns off all printing
+  lqr -on -c            turns on all controllers
+  lqr -off -c           turns off all controllers
+
+  lqr -s/et -p 0,1,2 -k1/2/3 150.2
+
+*/
+
 
 void getRPYCB(cmd* cmdPtr) {
   Command cmd(cmdPtr); // get arguments
@@ -348,10 +413,131 @@ void getMargCB(cmd* cmdPtr) {
     }
   }
 }
+void getGyroCB(cmd* cmdPtr) {
+  Command cmd(cmdPtr); // get arguments
+  Argument argOff   = cmd.getArgument("off");
+  Argument argOn    = cmd.getArgument("on");
+
+  Argument argCS    = cmd.getArgument("c");
+  String pin        = argCS.getValue();
+  int csPin         = pin.toInt();
+
+  bool sensorOn  = argOn.isSet();
+  bool sensorOff  = argOff.isSet();
+
+  if (sensorOn) {
+    switch (csPin) {
+      case 26:
+        runner.addTask(cs26_Gyro);
+        cs26_Gyro.enable();
+        break;
+      case 14:
+        runner.addTask(cs14_Gyro);
+        cs14_Gyro.enable();
+        break;
+      case 21:
+        runner.addTask(cs21_Gyro);
+        cs21_Gyro.enable();
+        break;
+      case 27:
+        runner.addTask(cs27_Gyro);
+        cs27_Gyro.enable();
+        break;
+      case 32:
+        runner.addTask(cs32_Gyro);
+        cs32_Gyro.enable();
+        break;
+      case 25:
+        runner.addTask(cs25_Gyro);
+        cs25_Gyro.enable();
+        break;
+    }
+  } else if (sensorOff) {
+    switch (csPin) {
+      case 26:
+        cs26_Gyro.disable();
+        runner.deleteTask(cs26_Gyro);
+        break;
+      case 14:
+        cs14_Gyro.disable();
+        runner.deleteTask(cs14_Gyro);
+        break;
+      case 21:
+        cs21_Gyro.disable();
+        runner.deleteTask(cs21_Gyro);
+        break;
+      case 27:
+        cs27_Gyro.disable();
+        runner.deleteTask(cs27_Gyro);
+        break;
+      case 32:
+        cs32_Gyro.disable();
+        runner.deleteTask(cs32_Gyro);
+        break;
+      case 25:
+        cs25_Gyro.disable();
+        runner.deleteTask(cs25_Gyro);
+        break;
+    }
+  }
+}
+void getPlantCB(cmd* cmdPtr) {
+  Command cmd(cmdPtr); // get arguments
+  Argument argOff   = cmd.getArgument("off");
+  Argument argOn    = cmd.getArgument("on");
+  Argument argAll   = cmd.getArgument("all");
+
+  Argument argCS    = cmd.getArgument("s");
+  String angle        = argCS.getValue();
+  int angleSelect         = angle.toInt();
+
+  bool sensorOn   = argOn.isSet();
+  bool sensorOff  = argOff.isSet();
+
+  if (sensorOn) {
+    switch (angleSelect) {
+      case 0:
+        runner.addTask(printPhiThetaPsi);
+        printPhiThetaPsi.enable();
+        break;
+      case 1:
+        runner.addTask(printPhi);
+        printPhi.enable();
+        break;
+      case 2:
+        runner.addTask(printTheta);
+        printTheta.enable();
+        break;
+      case 3:
+        runner.addTask(printPsi);
+        printPsi.enable();
+        break;
+    }
+  } else if (sensorOff) {
+    switch (angleSelect) {
+      case 0:
+        printPhiThetaPsi.disable();
+        runner.deleteTask(printPhiThetaPsi);
+        break;
+      case 1:
+        printPhi.disable();
+        runner.deleteTask(printPhi);
+        break;
+      case 2:
+        printTheta.disable();
+        runner.deleteTask(printTheta);
+        break;
+      case 3:
+        printPsi.disable();
+        runner.deleteTask(printPsi);
+        break;
+    }
+  }
+}
 
 void motorControlCB(cmd* cmdPtr) {
   Command cmd(cmdPtr); // get arguments
-  Argument argOn  = cmd.getArgument("e");
+  Argument argOn  = cmd.getArgument("on");
   Argument argX   = cmd.getArgument("x");
   Argument argY   = cmd.getArgument("y");
   Argument argZ   = cmd.getArgument("z");
