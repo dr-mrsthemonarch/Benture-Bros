@@ -1,8 +1,11 @@
 
-void setup() {
+void setup()
+{
   // serial to display data
   Serial.begin(115200);
-  while (!Serial) {}
+  while (!Serial)
+  {
+  }
   // start communication with IMU
   /*
     if (!bno.begin()) {
@@ -22,8 +25,20 @@ void setup() {
 
   startLEDC();
 
+  // start ADS1015 set gain, ranges
+  ads.begin();
+  ads.setGain(GAIN_ONE);                                      // 1x gain   +/- 4.096V  1 bit = 2mV      0.125mV
+  adc1_config_width(ADC_WIDTH_BIT_11);                        // Range 0-2048
+  adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11); // ADC_ATTEN_DB_11 = 0-3,6V
+
+  // initialize Escons as off
+  pinMode(enablePin, OUTPUT);
+  digitalWrite(enablePin, LOW);
+  pinMode(5, OUTPUT);
+  digitalWrite(5, HIGH);
+
   ///===================================================== SimpleCLI stuff
-  //Code failes unless comamnds added within setup()
+  // Code failes unless comamnds added within setup()
   cli.setOnError(errorCallback);
 
   cmdHelp = cli.addCommand("help", helpCB);
@@ -32,15 +47,15 @@ void setup() {
   cmdConverge = cli.addCommand("conv", convergeCB);
   cmdConverge.setDescription("Tests for converagance of sensor n");
 
+  cmdMotorState = cli.addCommand("motorstate", motorStateCB);
+  cmdMotorState.setDescription("Turn motors on or off");
+  cmdMotorState.addFlagArgument("e/nable,on");
+  cmdMotorState.addFlagArgument("d/isable,off");
+
   cmdMotor = cli.addCommand("motor", motorControlCB);
-  cmdMotor.setDescription("Manually turn motors on or off");
-  cmdMotor.addFlagArgument("e/nable,on");
-  cmdMotor.addFlagArgument("d/isable,off");
-  cmdMotor.addFlagArgument("all");
-  cmdMotor.addFlagArgument("x");
-  cmdMotor.addFlagArgument("y");
-  cmdMotor.addFlagArgument("z");
+  cmdMotor.setDescription("Manually set motor current");
   cmdMotor.addArgument("a/mps");
+  cmdMotor.addArgument("p");
 
   cmdGetAccelRaw = cli.addCommand("getAccelRaw", getAccelRawCB);
   cmdGetAccelRaw.setDescription("Get Raw accelerometer Data");
@@ -85,7 +100,6 @@ void setup() {
   cmdLQR.addFlagArgument("c");
   cmdLQR.addFlagArgument("p/rint");
 
-
   modLQR = cli.addCommand("lqrSet", lqrSetCB);
   modLQR.setDescription("Modify lqr gains for subsystem p_i");
   modLQR.addArgument("k1");
@@ -93,8 +107,10 @@ void setup() {
   modLQR.addArgument("k3");
   modLQR.addArgument("p");
 
-
-
+  cmdDebug = cli.addCommand("debug", debugCB);
+  cmdDebug.setDescription("Print various debug infos to Serial");
+  cmdDebug.addFlagArgument("e/nable,on");
+  cmdDebug.addFlagArgument("d/isable,off");
 
   ///===================================================== Taskscheduler stuff
   runner.init();
@@ -108,12 +124,11 @@ void setup() {
   runner.addTask(plantCalculate);
   runner.addTask(motorDriver);
   runner.addTask(controller);
-  
 
   angleCalculateRPY_Rads.enable();
-  converger.enable();
+//  converger.enable();
   plantCalculate.enable();
   controller.enable();
   serialRead.enable();
-  //  probeADC.enable();
+  probeADC.enable();
 }

@@ -1,6 +1,6 @@
 #include "header.hpp"
 
-//Prototypes for tasks
+// Prototypes for tasks
 //========================== Accel Raw
 void cs26PrintAccel_Raw();
 void cs14PrintAccel_Raw();
@@ -44,7 +44,6 @@ void plantPrintPsi();
 
 void taskPrintU();
 
-
 void blinkCB();
 void taskConverge();
 void readyLED();
@@ -52,23 +51,23 @@ void taskCalculateRPY_Rads();
 void taskReadSerial();
 void taskUpdateLQR();
 void taskUpdatePlant();
-//void taskGetOmega();
+void taskGetOmega();
 void taskUpdateMotor();
+void taskprintDebug();
+void taskPrintOmega();
 
-
-
-//Tasks to always run
+// Tasks to always run
 Task blinker(500, TASK_FOREVER, &blinkCB);
-//Task probeADC(10, TASK_FOREVER, &taskGetOmega);
+Task probeADC(5, TASK_FOREVER, &taskGetOmega);
 Task angleCalculateRPY_Rads(3, TASK_FOREVER, &taskCalculateRPY_Rads);
 Task controller(5, TASK_FOREVER, &taskUpdateLQR);
 Task plantCalculate(5, TASK_FOREVER, &taskUpdatePlant);
 Task motorDriver(5, TASK_FOREVER, &taskUpdateMotor);
 
-//Dynamic Tasks
+// Dynamic Tasks
 Task sensorReady(50, 50, &readyLED);
 Task converger(11, TASK_FOREVER, &taskConverge);
-Task serialRead(7, TASK_FOREVER, &taskReadSerial);
+Task serialRead(100, TASK_FOREVER, &taskReadSerial);
 
 Task cs26_RPY(5, TASK_FOREVER, &cs26PrintRPY_Rads);
 Task cs14_RPY(5, TASK_FOREVER, &cs14PrintRPY_Rads);
@@ -105,27 +104,30 @@ Task cs27_Gyro(5, TASK_FOREVER, &cs27PrintGyro);
 Task cs32_Gyro(5, TASK_FOREVER, &cs32PrintGyro);
 Task cs25_Gyro(5, TASK_FOREVER, &cs25PrintGyro);
 
+Task printOmega(50,TASK_FOREVER, &taskPrintOmega);
 Task printPhi(5, TASK_FOREVER, &plantPrintPhi);
 Task printTheta(5, TASK_FOREVER, &plantPrintTheta);
 Task printPsi(5, TASK_FOREVER, &plantPrintPsi);
 Task printPhiThetaPsi(5, TASK_FOREVER, &plantPrintAll);
+Task printDebug(100, TASK_FOREVER, &taskprintDebug);
 
 Task printU(50, TASK_FOREVER, &taskPrintU);
 
 Scheduler runner;
 
-
 //=========== Task Functions ===========
-void taskReadSerial() {
-  if (Serial.available() > 0) {
+void taskReadSerial()
+{
+  if (Serial.available() > 0)
+  {
     stringRead = Serial.readStringUntil('\n');
-    schedulerOnOff(stringRead.toInt());
     cli.parse(stringRead);
   }
   parser();
 }
 
-void taskPrintU() {
+void taskPrintU()
+{
   Serial.print(u[0], 4);
   Serial.print(',');
   Serial.print(u[1], 4);
@@ -133,7 +135,8 @@ void taskPrintU() {
   Serial.println(u[2], 4);
 }
 
-void taskPrintPlant(const Vector3f& plant) {
+void taskPrintPlant(const Vector3f &plant)
+{
   Serial.print(plant[0], 4);
   Serial.print(',');
   Serial.print(plant[1], 4);
@@ -141,7 +144,8 @@ void taskPrintPlant(const Vector3f& plant) {
   Serial.println(plant[2], 4);
 }
 
-void taskPrintRPY_Rads(int pin) {
+void taskPrintRPY_Rads(int pin)
+{
   Serial.print(rpyValues[pin][0], 4);
   Serial.print(',');
   Serial.print(rpyValues[pin][1], 4);
@@ -149,7 +153,8 @@ void taskPrintRPY_Rads(int pin) {
   Serial.println(rpyValues[pin][2], 4);
 }
 
-void taskPrintAccel_Raw(int pin) {
+void taskPrintAccel_Raw(int pin)
+{
   Serial.print(accelValuesRaw[pin][0], 1);
   Serial.print(',');
   Serial.print(accelValuesRaw[pin][1], 1);
@@ -157,7 +162,8 @@ void taskPrintAccel_Raw(int pin) {
   Serial.println(accelValuesRaw[pin][2], 1);
 }
 
-void taskPrintAccel_Mss(int pin) {
+void taskPrintAccel_Mss(int pin)
+{
   Serial.print(accelValuesMss[pin][0], 4);
   Serial.print(',');
   Serial.print(accelValuesMss[pin][1], 4);
@@ -165,7 +171,8 @@ void taskPrintAccel_Mss(int pin) {
   Serial.println(accelValuesMss[pin][2], 4);
 }
 
-void taskPrintGyro(int pin) {
+void taskPrintGyro(int pin)
+{
   Serial.print(gyroValues[pin][0], 4);
   Serial.print(',');
   Serial.print(gyroValues[pin][1], 4);
@@ -173,7 +180,8 @@ void taskPrintGyro(int pin) {
   Serial.println(gyroValues[pin][2], 4);
 }
 
-void taskPrintMag(int pin) {
+void taskPrintMag(int pin)
+{
   Serial.print(magValues[pin][0], 4);
   Serial.print(',');
   Serial.print(magValues[pin][1], 4);
@@ -181,7 +189,8 @@ void taskPrintMag(int pin) {
   Serial.println(magValues[pin][2], 4);
 }
 
-void taskPrintMarg(int pin) {
+void taskPrintMarg(int pin)
+{
   Serial.print("Raw:");
   Serial.print((int)round(accelValuesMss[pin][0] * 835.41));
   Serial.print(',');
@@ -199,30 +208,63 @@ void taskPrintMarg(int pin) {
   Serial.print(',');
   Serial.print((int)round(magValues[pin][1] * 10));
   Serial.print(',');
-  Serial.print((int)round(magValues[pin][2] * 10 ));
+  Serial.print((int)round(magValues[pin][2] * 10));
   Serial.println();
 }
 
-void taskConverge() {
+void plantPrintAll()
+{
+  // prints angle displacement
+  Serial.print(plantPhi(0));
+  Serial.print(",");
+  Serial.print(plantTheta(0));
+  Serial.print(",");
+  Serial.println(plantPsi(0));
+}
+
+void taskprintDebug()
+{
+  Serial.print(plantPsi(0));
+  Serial.print(",");
+  Serial.print(plantPsi(1));
+  Serial.print(",");
+  Serial.println(plantPsi(2));
+}
+//========================== Plant Functions
+void taskPrintOmega()
+{
+  Serial.print(omega[0]);
+  Serial.print(",");
+  Serial.print(omega[1]);
+  Serial.print(",");
+  Serial.println(omega[2]);
+}
+
+void taskConverge()
+{
   testConverge(0, 1000, 0.5, 0.005);
 }
 
-void taskCalculateRPY_Rads() {
-  for (int i = 0 ; i < 2; i++) {
+void taskCalculateRPY_Rads()
+{
+  for (int i = 0; i < 2; i++)
+  {
     rpyValues[i] = testing[i].calculateRPYRadians();
     gyroValues[i] = testing[i].getGyro();
     accelValuesRaw[i] = testing[i].getAccelRaw();
     accelValuesMss[i] = testing[i].getAccelMss();
     magValues[i] = testing[i].getMag();
 
-    phiRPY[i] = sensorOffset(1, rpyValues[0][i], rpyValues[1][i]); //angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
-    dotPhi[i] = sensorOffset(1, gyroValues[0][i], gyroValues[1][i]); //same as above
+    phiRPY[i] = sensorOffset(1, rpyValues[0][i], rpyValues[1][i]);   // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+    dotPhi[i] = sensorOffset(1, gyroValues[0][i], gyroValues[1][i]); // same as above
   }
 }
 
-void taskGetOmega() {
+void taskGetOmega()
+{
   // Read TI ADS1015
-  for (int i = 0; i < 2; i++) {
+  for (int i = 0; i < 2; i++)
+  {
     adc[i] = readADC(i);
     omega[i] = pwmToRads(adc[i]);
   }
@@ -230,31 +272,35 @@ void taskGetOmega() {
   omega[2] = pwmToRads(2);
 }
 
-void taskUpdatePlant() {
-  plantPhi[0] = phiRPY[1]; // Pitch Angle is required
-  plantPhi[1] = dotPhi[1]; // same as above
-  plantPhi[2] = omega[0];
-  plantTheta[0] = thetaRPY[1];
-  plantTheta[1] = dotTheta[1];
-  plantTheta[2] = omega[1];
-  plantPsi[0] = psiRPY[1];
-  plantPsi[1] = dotPsi[1];
-  plantPsi[2] = omega[3];
+void taskUpdatePlant()
+{
+  plantPhi(0) = phiRPY[1]; // Pitch Angle is required
+  plantPhi(1) = dotPhi[1]; // same as above
+  plantPhi(2) = omega[0];
+  plantTheta(0) = thetaRPY[1];
+  plantTheta(1) = dotTheta[1];
+  plantTheta(2) = omega[1];
+  plantPsi(0) = psiRPY[1];
+  plantPsi(1) = dotPsi[1];
+  plantPsi(2) = omega[2];
 }
 
-void taskUpdateLQR() {
-  u[0] =  updateLQR(lqrPhi, plantPhi);
-  u[1] =  updateLQR(lqrTheta, plantTheta);
-  u[2] =  updateLQR(lqrPsi, plantPsi);
+void taskUpdateLQR()
+{
+  u[0] = updateLQR(lqrPhi, plantPhi);
+  u[1] = updateLQR(lqrTheta, plantTheta);
+  u[2] = updateLQR(lqrPsi, plantPsi);
 }
 
-void taskUpdateMotor() {
-  motorControl(0, u[0]); //update Phi
-  motorControl(1, u[1]); //update Theta
-  motorControl(2, u[2]); //update Psi
+void taskUpdateMotor()
+{
+  motorControl(0, u[0]); // update Phi
+  motorControl(1, u[1]); // update Theta
+  motorControl(2, u[2]); // update Psi
 }
 
-void taskUpdateFullState() {
+void taskUpdateFullState()
+{
   taskCalculateRPY_Rads();
   taskGetOmega();
   taskUpdatePlant();
@@ -264,22 +310,26 @@ void taskUpdateFullState() {
 
 //=========== Task Helper Functions ===========
 
-void testConverge(int pin, int iteration, float range, float dt ) {
+void testConverge(int pin, int iteration, float range, float dt)
+{
   bool test;
   static int iter = 0;
-  if (converger.isFirstIteration()) {
+  if (converger.isFirstIteration())
+  {
     iter = 0;
     test = 0;
   }
   test = testing[pin].converge(rpyValues[pin][0], range, dt);
   iter = iter + test;
-  if (iter == iteration && sensorReady.isFirstIteration()) {
+  if (iter == iteration && sensorReady.isFirstIteration())
+  {
     runner.addTask(sensorReady);
     sensorReady.enable();
     converger.disable();
     runner.deleteTask(converger);
   }
-  if (iter == iteration && sensorReady.isLastIteration()) {
+  if (iter == iteration && sensorReady.isLastIteration())
+  {
     runner.addTask(sensorReady);
     sensorReady.restart();
     sensorReady.enable();
@@ -289,18 +339,24 @@ void testConverge(int pin, int iteration, float range, float dt ) {
   }
 }
 
-void readyLED() {
-  if (sensorReady.isFirstIteration() ) {
+void readyLED()
+{
+  if (sensorReady.isFirstIteration())
+  {
     LED_state = false;
   }
-  if ( LED_state ) {
+  if (LED_state)
+  {
     LEDOff();
     LED_state = false;
-  } else {
+  }
+  else
+  {
     LEDOn();
     LED_state = true;
   }
-  if (sensorReady.isLastIteration() ) {
+  if (sensorReady.isLastIteration())
+  {
     LED_state = false;
     LEDOff();
     sensorReady.disable();
@@ -309,163 +365,191 @@ void readyLED() {
   }
 }
 
-void blinkCB() {
-  if (blinker.isFirstIteration() ) {
+void blinkCB()
+{
+  if (blinker.isFirstIteration())
+  {
     LED_state = false;
   }
-  if ( LED_state ) {
+  if (LED_state)
+  {
     LEDOff();
     LED_state = false;
   }
-  else {
+  else
+  {
     LEDOn();
     LED_state = true;
   }
 }
 
 //========================== RPY in Rads Functions
-void cs26PrintRPY_Rads() {
+void cs26PrintRPY_Rads()
+{
   taskPrintRPY_Rads(cs26);
 }
 
-void cs14PrintRPY_Rads() {
+void cs14PrintRPY_Rads()
+{
   taskPrintRPY_Rads(cs14);
 }
 
-void cs21PrintRPY_Rads() {
+void cs21PrintRPY_Rads()
+{
   taskPrintRPY_Rads(cs21);
 }
 
-void cs27PrintRPY_Rads() {
+void cs27PrintRPY_Rads()
+{
   taskPrintRPY_Rads(cs27);
 }
 
-void cs32PrintRPY_Rads() {
+void cs32PrintRPY_Rads()
+{
   taskPrintRPY_Rads(cs32);
 }
 
-void cs25PrintRPY_Rads() {
+void cs25PrintRPY_Rads()
+{
   taskPrintRPY_Rads(cs25);
 }
 
 //========================== Accel Raw Functions
-void cs26PrintAccel_Raw() {
+void cs26PrintAccel_Raw()
+{
   taskPrintAccel_Raw(cs26);
 }
 
-void cs14PrintAccel_Raw() {
+void cs14PrintAccel_Raw()
+{
   taskPrintAccel_Raw(cs14);
 }
 
-void cs21PrintAccel_Raw() {
+void cs21PrintAccel_Raw()
+{
   taskPrintAccel_Raw(cs21);
 }
 
-void cs27PrintAccel_Raw() {
+void cs27PrintAccel_Raw()
+{
   taskPrintAccel_Raw(cs27);
 }
 
-void cs32PrintAccel_Raw() {
+void cs32PrintAccel_Raw()
+{
   taskPrintAccel_Raw(cs32);
 }
 
-void cs25PrintAccel_Raw() {
+void cs25PrintAccel_Raw()
+{
   taskPrintAccel_Raw(cs25);
 }
 
 //========================== Accel Mss Functions
-void cs26PrintAccel_Mss() {
+void cs26PrintAccel_Mss()
+{
   taskPrintAccel_Mss(cs26);
 }
 
-void cs14PrintAccel_Mss() {
+void cs14PrintAccel_Mss()
+{
   taskPrintAccel_Mss(cs14);
 }
 
-void cs21PrintAccel_Mss() {
+void cs21PrintAccel_Mss()
+{
   taskPrintAccel_Mss(cs21);
 }
 
-void cs27PrintAccel_Mss() {
+void cs27PrintAccel_Mss()
+{
   taskPrintAccel_Mss(cs27);
 }
 
-void cs32PrintAccel_Mss() {
+void cs32PrintAccel_Mss()
+{
   taskPrintAccel_Mss(cs32);
 }
 
-void cs25PrintAccel_Mss() {
+void cs25PrintAccel_Mss()
+{
   taskPrintAccel_Mss(cs25);
 }
 
 //========================== MARG For Calibration
-void cs26PrintMarg() {
+void cs26PrintMarg()
+{
   taskPrintMarg(cs26);
 }
 
-void cs14PrintMarg() {
+void cs14PrintMarg()
+{
   taskPrintMarg(cs14);
 }
 
-void cs21PrintMarg() {
+void cs21PrintMarg()
+{
   taskPrintMarg(cs21);
 }
 
-void cs27PrintMarg() {
+void cs27PrintMarg()
+{
   taskPrintMarg(cs27);
 }
 
-void cs32PrintMarg() {
+void cs32PrintMarg()
+{
   taskPrintMarg(cs32);
 }
 
-void cs25PrintMarg() {
+void cs25PrintMarg()
+{
   taskPrintMarg(cs25);
 }
 
 //========================== Gyro Functions
-void cs26PrintGyro() {
+void cs26PrintGyro()
+{
   taskPrintGyro(cs26);
 }
 
-void cs14PrintGyro() {
+void cs14PrintGyro()
+{
   taskPrintGyro(cs14);
 }
 
-void cs21PrintGyro() {
+void cs21PrintGyro()
+{
   taskPrintGyro(cs21);
 }
 
-void cs27PrintGyro() {
+void cs27PrintGyro()
+{
   taskPrintGyro(cs27);
 }
 
-void cs32PrintGyro() {
+void cs32PrintGyro()
+{
   taskPrintGyro(cs32);
 }
 
-void cs25PrintGyro() {
+void cs25PrintGyro()
+{
   taskPrintGyro(cs25);
 }
 
 //========================== Plant Functions
-void plantPrintPhi() {
+void plantPrintPhi()
+{
   taskPrintPlant(plantPhi);
 }
 
-void plantPrintTheta() {
+void plantPrintTheta()
+{
   taskPrintPlant(plantTheta);
 }
 
-void plantPrintPsi() {
+void plantPrintPsi()
+{
   taskPrintPlant(plantPsi);
-}
-
-void plantPrintAll() {
-  //prints angle displacement
-  Serial.print(plantPhi[0]);
-  Serial.print(",");
-  Serial.print(plantTheta[0]);
-  Serial.print(",");
-  Serial.println(plantPsi[0]);
 }

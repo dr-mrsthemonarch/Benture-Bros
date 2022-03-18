@@ -1,7 +1,6 @@
 #include <array>
 #include <Arduino.h>
 #include <Eigen.h>
-//#include <utility/imumaths.h>
 #include <TaskScheduler.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BNO055.h>
@@ -9,6 +8,7 @@
 #include <driver/adc.h>
 #include <SensorCaller2.h>
 #include <SimpleCLI.h>
+#include <Adafruit_ADS1X15.h> //External ADC
 
 using namespace Eigen;
 
@@ -25,7 +25,7 @@ std::array<int, 6> cs = {26, 14, 21, 27, 32, 25};
 bool LED_state = false;
 
 //===============================================================motor stuff
-
+Adafruit_ADS1015 ads;     /* Use this for the 12-bit version */
 int16_t adc[3]; // ADS1015
 int motorPin[3] = {15, 12, 33}; // in order x, y, z motors
 int enablePin = 13;
