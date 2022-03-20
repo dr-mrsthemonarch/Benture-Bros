@@ -1,4 +1,4 @@
-
+Command cmdMotorPrint;
 Command cmdMotorState;
 Command cmdMotor;
 Command cmdConverge;
@@ -550,7 +550,7 @@ void getPlantCB(cmd *cmdPtr)
   Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
   Argument argAll = cmd.getArgument("all");
 
-  Argument argCS = cmd.getArgument("s");
+  Argument argCS = cmd.getArgument("p");
   String angle = argCS.getValue();
   int angleSelect = angle.toInt();
 
@@ -566,6 +566,7 @@ void getPlantCB(cmd *cmdPtr)
       printPhiThetaPsi.enable();
       break;
     case 1:
+
       runner.addTask(printPhi);
       printPhi.enable();
       break;
@@ -603,13 +604,36 @@ void getPlantCB(cmd *cmdPtr)
   }
 }
 
+void motorPrintCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                            // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on"); // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off");
+  bool motorOn = argOn.isSet();
+  bool motorOff = argOff.isSet();
+ 
+  if (motorOn)
+  {
+    runner.addTask(printOmega);
+    printOmega.enable();
+  }
+  else if (motorOff)
+  {
+    printOmega.disable();
+    runner.deleteTask(printOmega);
+  }
+}
+
 void motorStateCB(cmd *cmdPtr)
 {
-  Command cmd(cmdPtr);                               // get arguments
-  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
-  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+  Command cmd(cmdPtr);                            // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on"); // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off");
+  Argument argPrint = cmd.getArgument("p/rint");
+
   bool motorOn = argOn.isSet();
-  bool motorOff = argOn.isSet();
+  bool motorOff = argOff.isSet();
+  bool motorPrint = argPrint.isSet();
 
   if (motorOn)
   {
@@ -618,6 +642,16 @@ void motorStateCB(cmd *cmdPtr)
   else if (motorOff)
   {
     disableMotor();
+  }
+  else if (motorPrint && motorOn)
+  {
+    runner.addTask(printOmega);
+    printOmega.enable();
+  }
+  else if (motorPrint && motorOff)
+  {
+    printOmega.disable();
+    runner.deleteTask(printOmega);
   }
 }
 

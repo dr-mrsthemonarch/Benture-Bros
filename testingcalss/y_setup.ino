@@ -18,11 +18,11 @@ void setup()
 
   delay(100);
   pinMode(LED_BUILTIN, OUTPUT);
-  testing[0].setup();
-  testing[0].report();
-  testing[1].setup();
-  testing[1].report();
-
+  for (int i; i < 6; i++)
+  {
+    testing[i].setup();
+    testing[i].report();
+  }
   startLEDC();
 
   // start ADS1015 set gain, ranges
@@ -32,10 +32,10 @@ void setup()
   adc1_config_channel_atten(ADC1_CHANNEL_0, ADC_ATTEN_DB_11); // ADC_ATTEN_DB_11 = 0-3,6V
 
   // initialize Escons as off
-  pinMode(enablePin, OUTPUT);
-  digitalWrite(enablePin, LOW);
-  pinMode(5, OUTPUT);
-  digitalWrite(5, HIGH);
+  pinMode(enablePin, OUTPUT);   // Set enable pin to IO
+  digitalWrite(enablePin, LOW); // Set off for safety
+  pinMode(5, OUTPUT);           // not sure what pin 5 is for
+  digitalWrite(5, HIGH);        // set high?
 
   ///===================================================== SimpleCLI stuff
   // Code failes unless comamnds added within setup()
@@ -47,8 +47,13 @@ void setup()
   cmdConverge = cli.addCommand("conv", convergeCB);
   cmdConverge.setDescription("Tests for converagance of sensor n");
 
-  cmdMotorState = cli.addCommand("motorstate", motorStateCB);
-  cmdMotorState.setDescription("Turn motors on or off");
+  cmdMotorPrint = cli.addCommand("motorp", motorPrintCB);
+  cmdMotorPrint.setDescription("Turn motors on or off, Print Angular Velocities");
+  cmdMotorPrint.addFlagArgument("e/nable,on");
+  cmdMotorPrint.addFlagArgument("d/isable,off");
+
+  cmdMotorState = cli.addCommand("motors", motorStateCB);
+  cmdMotorState.setDescription("Turn motors on or off, Print Angular Velocities");
   cmdMotorState.addFlagArgument("e/nable,on");
   cmdMotorState.addFlagArgument("d/isable,off");
 
@@ -91,7 +96,7 @@ void setup()
   cmdGetPlant.setDescription("Get Pi Subsystem SIMO Data, Rad_i, Rad_i/s, Omega_i");
   cmdGetPlant.addFlagArgument("e/nable,on");
   cmdGetPlant.addFlagArgument("d/isable,off");
-  cmdGetPlant.addArgument("s");
+  cmdGetPlant.addArgument("p");
 
   cmdLQR = cli.addCommand("lqr", lqrCB);
   cmdLQR.setDescription("Turn on LQR Controllers, print Controller Output, set Gain values");
@@ -118,17 +123,16 @@ void setup()
   runner.addTask(serialRead);
   runner.addTask(blinker);
   runner.addTask(converger);
-
-  //  runner.addTask(probeADC);
   runner.addTask(angleCalculateRPY_Rads);
   runner.addTask(plantCalculate);
   runner.addTask(motorDriver);
   runner.addTask(controller);
+  runner.addTask(probeADC);
 
   angleCalculateRPY_Rads.enable();
-//  converger.enable();
+  probeADC.enable();
+  //  converger.enable();
   plantCalculate.enable();
   controller.enable();
   serialRead.enable();
-  probeADC.enable();
 }

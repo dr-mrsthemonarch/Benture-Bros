@@ -30,11 +30,9 @@ void taskSensorOffset()
 {
   for (int i = 0; i < 3; i++)
   {
-    phiRPY[i] = sensorOffset(1, rpyValues[0][i], rpyValues[1][i]); // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
-    //    thetaRPY[i] = sensorOffset(1, rpyValues[2][i], rpyValues[3][i]); //not required for breadboardtestbench
-    //    psiRPY[i] = sensorOffset(1, rpyValues[4][i], rpyValues[5][i]);
-    psiRPY[i] = 0;
-    thetaRPY[i] = 0;
+    phiRPY[i] = sensorOffset(-1, rpyValues[0][i], rpyValues[1][i]); // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+    thetaRPY[i] = sensorOffset(-1, rpyValues[2][i], rpyValues[3][i]); //not required for breadboardtestbench
+    psiRPY[i] = sensorOffset(-1, rpyValues[4][i], rpyValues[5][i]);
   }
 }
 
@@ -79,9 +77,7 @@ float ampsToPWM(float sgnl)
   return pwmVoltage;
 }
 
-int readADC(int channel)
-//used for reading motor signals from TI ADC
-{
+int readADC(int channel) {
   return ads.readADC_SingleEnded(channel);
 }
 
