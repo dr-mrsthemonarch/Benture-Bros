@@ -48,7 +48,7 @@ struct SensorCaller2::Private
 
 // thing to call class object, requires GPIO, mag_offset array {x,y,z}, and _magSoftironMatrix {{1,2,3},{4,5,6},{7,8,9}}
 
-SensorCaller2::SensorCaller2(const int filterRate, const int gpio, const std::array<float, 3> &accelOffsets, const std::array<float, 3> &magOffsets, const std::array<std::array<float, 3>, 3> &magSoftironMatrix)
+SensorCaller2::SensorCaller2(const int filterRate, const int gpio, const std::array<float, 6> &accelOffsets, const std::array<float, 3> &magOffsets, const std::array<std::array<float, 3>, 3> &magSoftironMatrix)
     : sensors(SPI, gpio),
       _accelOffsets(accelOffsets),
       _magOffsets(magOffsets),
@@ -76,10 +76,11 @@ std::array<float, 3> SensorCaller2::calculateEuler()
   sensors.readSensor();
   // use const as much as possible
   //  const  std::array<float, 3> _magento;
+  // gi * wi + vi calibration function
   _accel = {
-      sensors.getAccelX_mss() - _accelOffsets[0],
-      sensors.getAccelY_mss() - _accelOffsets[1],
-      sensors.getAccelZ_mss() - _accelOffsets[2],
+      sensors.getAccelX_mss()*_accelOffsets[0] + _accelOffsets[3],
+      sensors.getAccelY_mss()*_accelOffsets[1] + _accelOffsets[4],
+      sensors.getAccelZ_mss()*_accelOffsets[2] + _accelOffsets[5],
   };
   _gyro = {
       sensors.getGyroX_rads(),
@@ -207,7 +208,7 @@ float SensorCaller2::getZAccelRaw()
 std::array<float, 3> SensorCaller2::getGyro()
 {
   std::array<float, 3> _swapped;
-  _swapped = {_gyro[0], _gyro[2],-1*_gyro[1]}; // gyro[0] = roll, gyro[2] = pitch, gyro[1] = yaw, gyro[1] *-1 to give same direction rotation
+  _swapped = {_gyro[0], -1*_gyro[2], _gyro[1]}; // gyro[0] = roll, gyro[2] = pitch, gyro[1] = yaw, gyro[1] *-1 to give same direction rotation
   return _swapped;
 }
 float SensorCaller2::getXGyro()

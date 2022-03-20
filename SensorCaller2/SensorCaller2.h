@@ -17,7 +17,7 @@ private:
 
     // initialize private arrays/vars
     const std::array<float, 2> _magFieldStrength = {{41.85F, 40.6F}};
-    const std::array<float, 3> _accelOffsets;
+    const std::array<float, 6> _accelOffsets;
     const std::array<float, 3> _gyroOffsets = {{0}};
     const std::array<float, 3> _magOffsets;
     const std::array<std::array<float, 3>, 3> _magSoftironMatrix;
@@ -39,7 +39,7 @@ private:
     static float _dir;
 
 public:
-    SensorCaller2(const int filterRate, const int gpio, const std::array<float, 3> &accelOffsets, const std::array<float, 3> &magOffsets, const std::array<std::array<float, 3>, 3> &magSoftironMatrix);
+    SensorCaller2(const int filterRate, const int gpio, const std::array<float, 6> &accelOffsets, const std::array<float, 3> &magOffsets, const std::array<std::array<float, 3>, 3> &magSoftironMatrix);
     void setup();
     axisval calculateEuler();
     axisval calculateRPY();
