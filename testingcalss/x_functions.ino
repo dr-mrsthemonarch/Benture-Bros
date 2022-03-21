@@ -9,10 +9,17 @@ inline void LEDOff()
   digitalWrite(LED_BUILTIN, LOW);
 }
 
-float sensorOffset(float gain, float sensor1, float sensor2)
+float sensorDiff(float gain, float sensor1, float sensor2)
 {
   float sol;
-  sol = gain * sensor2 + sensor1;
+  sol = sensor1 + gain * sensor2;
+  return sol;
+}
+
+float sensorMean(float gain, float sensorPos, float sensorNeg)
+{
+  float sol;
+  sol = (sensorPos + gain * sensorNeg) * 0.5;
   return sol;
 }
 
@@ -30,9 +37,9 @@ void taskSensorOffset()
 {
   for (int i = 0; i < 3; i++)
   {
-    phiRPY[i] = sensorOffset(-1, rpyValues[0][i], rpyValues[1][i]); // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
-    thetaRPY[i] = sensorOffset(-1, rpyValues[2][i], rpyValues[3][i]); //not required for breadboardtestbench
-    psiRPY[i] = sensorOffset(-1, rpyValues[4][i], rpyValues[5][i]);
+    phiRPY[i] = sensorDiff(-1, rpyValues[0][i], rpyValues[1][i]);   // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+    thetaRPY[i] = sensorDiff(-1, rpyValues[2][i], rpyValues[3][i]); // not required for breadboardtestbench
+    psiRPY[i] = sensorDiff(-1, rpyValues[4][i], rpyValues[5][i]);
   }
 }
 
@@ -60,7 +67,7 @@ void motorControl(float sgnl, int16_t channel)
 }
 
 float pwmToRads(float voltage)
-//used for printing 
+// used for printing
 {
   // calculate RPM from range of 0.1v to 3v 12 bit
   float RPM = (8.53108 * voltage - 6594.5);
@@ -69,7 +76,7 @@ float pwmToRads(float voltage)
 }
 
 float ampsToPWM(float sgnl)
-//used for motor control
+// used for motor control
 {
   // convert Amps to PWM signal
   float pwmVoltage;
@@ -77,12 +84,13 @@ float ampsToPWM(float sgnl)
   return pwmVoltage;
 }
 
-int readADC(int channel) {
+int readADC(int channel)
+{
   return ads.readADC_SingleEnded(channel);
 }
 
 void startLEDC()
-//required for starting pwm timers
+// required for starting pwm timers
 {
   for (int i = 0; i < 3; i++)
   {

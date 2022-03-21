@@ -20,8 +20,8 @@ void setup()
   pinMode(LED_BUILTIN, OUTPUT);
   for (int i; i < 6; i++)
   {
-    testing[i].setup();
-    testing[i].report();
+    mpu9250[i].setup();
+    mpu9250[i].report();
   }
   startLEDC();
 
@@ -123,16 +123,20 @@ void setup()
   runner.addTask(serialRead);
   runner.addTask(blinker);
   runner.addTask(converger);
-  runner.addTask(angleCalculateRPY_Rads);
-  runner.addTask(plantCalculate);
-  runner.addTask(motorDriver);
-  runner.addTask(controller);
+//  runner.addTask(angleCalculateRPY_Rads);
+//  runner.addTask(angleCalculateEuler);
+//  runner.addTask(plantCalculate);
+//  runner.addTask(currentController);
+//  runner.addTask(controller);
   runner.addTask(probeADC);
+  runner.addTask(doAll);
 
-  angleCalculateRPY_Rads.enable();
+//angleCalculateEuler.enable();
+//  angleCalculateRPY_Rads.enable();
   probeADC.enable();
   //  converger.enable();
-  plantCalculate.enable();
-  controller.enable();
+//  plantCalculate.enable();
+//  controller.enable();
+  doAll.enable();
   serialRead.enable();
 }

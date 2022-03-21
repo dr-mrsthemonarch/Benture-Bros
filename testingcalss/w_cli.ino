@@ -100,11 +100,11 @@ void lqrCB(cmd *cmdPtr)
   }
   else if (lqrOn && c)
   {
-    motorDriver.enable();
+    currentController.enable();
   }
   else if (lqrOff && c)
   {
-    motorDriver.disable();
+    currentController.disable();
   }
 }
 

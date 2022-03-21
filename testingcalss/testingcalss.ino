@@ -16,12 +16,12 @@ void cs27PrintAccel_Mss();
 void cs32PrintAccel_Mss();
 void cs25PrintAccel_Mss();
 //========================== RPY Rads
-void cs26PrintRPY_Rads();
-void cs14PrintRPY_Rads();
-void cs21PrintRPY_Rads();
-void cs27PrintRPY_Rads();
-void cs32PrintRPY_Rads();
-void cs25PrintRPY_Rads();
+void cs26Print_Rads();
+void cs14Print_Rads();
+void cs21Print_Rads();
+void cs27Print_Rads();
+void cs32Print_Rads();
+void cs25Print_Rads();
 //========================== Marg
 void cs26PrintMarg();
 void cs14PrintMarg();
@@ -48,33 +48,38 @@ void blinkCB();
 void taskConverge();
 void readyLED();
 void taskCalculateRPY_Rads();
+void taskCalculateEuler();
 void taskReadSerial();
 void taskUpdateLQR();
 void taskUpdatePlant();
 void taskGetOmega();
-void taskUpdateMotor();
+void taskCurrentController();
 void taskPrintDebug();
 void taskPrintOmega();
+void taskUpdateFullState();
 
 // Tasks to always run
+Task serialRead(100, TASK_FOREVER, &taskReadSerial);
+Task converger(11, TASK_FOREVER, &taskConverge);
 Task blinker(500, TASK_FOREVER, &blinkCB);
 Task probeADC(5, TASK_FOREVER, &taskGetOmega);
-Task angleCalculateRPY_Rads(3, TASK_FOREVER, &taskCalculateRPY_Rads);
+Task angleCalculateRPY_Rads(1, TASK_FOREVER, &taskCalculateRPY_Rads);
+Task angleCalculateEuler(1, TASK_FOREVER, &taskCalculateEuler);
 Task controller(5, TASK_FOREVER, &taskUpdateLQR);
-Task plantCalculate(5, TASK_FOREVER, &taskUpdatePlant);
-Task motorDriver(5, TASK_FOREVER, &taskUpdateMotor);
+Task plantCalculate(1, TASK_FOREVER, &taskUpdatePlant);
+Task currentController(5, TASK_FOREVER, &taskCurrentController);
+Task doAll(1, TASK_FOREVER, &taskUpdateFullState);
+
 
 // Dynamic Tasks
 Task sensorReady(50, 50, &readyLED);
-Task converger(11, TASK_FOREVER, &taskConverge);
-Task serialRead(100, TASK_FOREVER, &taskReadSerial);
 
-Task cs26_RPY(20, TASK_FOREVER, &cs26PrintRPY_Rads);
-Task cs14_RPY(20, TASK_FOREVER, &cs14PrintRPY_Rads);
-Task cs21_RPY(20, TASK_FOREVER, &cs21PrintRPY_Rads);
-Task cs27_RPY(20, TASK_FOREVER, &cs27PrintRPY_Rads);
-Task cs32_RPY(20, TASK_FOREVER, &cs32PrintRPY_Rads);
-Task cs25_RPY(20, TASK_FOREVER, &cs25PrintRPY_Rads);
+Task cs26_RPY(20, TASK_FOREVER, &cs26Print_Rads);
+Task cs14_RPY(20, TASK_FOREVER, &cs14Print_Rads);
+Task cs21_RPY(20, TASK_FOREVER, &cs21Print_Rads);
+Task cs27_RPY(20, TASK_FOREVER, &cs27Print_Rads);
+Task cs32_RPY(20, TASK_FOREVER, &cs32Print_Rads);
+Task cs25_RPY(20, TASK_FOREVER, &cs25Print_Rads);
 
 Task cs26_Accel_Raw(10, TASK_FOREVER, &cs26PrintAccel_Raw);
 Task cs14_Accel_Raw(10, TASK_FOREVER, &cs14PrintAccel_Raw);
@@ -108,8 +113,8 @@ Task printOmega(50, TASK_FOREVER, &taskPrintOmega);
 Task printPhi(20, TASK_FOREVER, &plantPrintPhi);
 Task printTheta(20, TASK_FOREVER, &plantPrintTheta);
 Task printPsi(20, TASK_FOREVER, &plantPrintPsi);
-Task printPhiThetaPsi(20, TASK_FOREVER, &plantPrintAll);
-Task printDebug(100, TASK_FOREVER, &taskPrintDebug);
+Task printPhiThetaPsi(10, TASK_FOREVER, &plantPrintAll);
+Task printDebug(10, TASK_FOREVER, &taskPrintDebug);
 
 Task printU(50, TASK_FOREVER, &taskPrintU);
 
@@ -145,7 +150,7 @@ void taskPrintPlant(const Vector3f &plant)
   Serial.println(plant(2), 4);
 }
 
-void taskPrintRPY_Rads(int pin)
+void taskPrint_Rads(int pin)
 {
   Serial.print(rpyValues[pin][0], 4);
   Serial.print(',');
@@ -226,9 +231,9 @@ void plantPrintAll()
 
 void taskPrintDebug()
 {
-  Serial.print(adc[0]);
+  Serial.print(rpyValues[2][0]);
   Serial.print(",");
-  Serial.print(adc[1]);
+  Serial.print(gyroValues[2][1]);
   Serial.print(",");
   Serial.println(adc[2]);
 }
@@ -251,21 +256,87 @@ void taskCalculateRPY_Rads()
 {
   for (int i = 0; i < 6; i++)
   {
-    rpyValues[i] = testing[i].calculateRPYRadians();
-    gyroValues[i] = testing[i].getGyro();
-    accelValuesRaw[i] = testing[i].getAccelRaw();
-    accelValuesMss[i] = testing[i].getAccelMss();
-    magValues[i] = testing[i].getMag();
+    rpyValues[i] = mpu9250[i].calculateEuler();
+    //  rpyValues[i] = mpu9250[i].calculateRPYRadians();
+    gyroValues[i] = mpu9250[i].getGyro();
+    accelValuesMss[i] = mpu9250[i].getAccelMss();
+    magValues[i] = mpu9250[i].getMag();
   }
+  /*
+    for (int i = 0; i < 6; i++)
+    {
+      if (i == 1)
+      {
+        offsetValues[i][1] = rpyValues[i][1] + M_PI;
+      }
+      else
+        offsetValues[i] = rpyValues[i];
+    }
+  */
+  phiRPY[0] = sensorDiff(-1, rpyValues[0][0], rpyValues[1][0]);
+  phiRPY[1] = sensorDiff(-1, rpyValues[0][1], rpyValues[1][1]);
+  phiRPY[2] = sensorDiff(1, rpyValues[0][2], rpyValues[1][2]);
+  thetaRPY[0] = sensorDiff(-1, rpyValues[2][0], rpyValues[3][0]);
+  thetaRPY[1] = sensorDiff(-1, rpyValues[2][1], rpyValues[3][1]);
+  thetaRPY[2] = sensorDiff(-1, rpyValues[2][2], rpyValues[3][2]);
+  psiRPY[0] = sensorDiff(1, rpyValues[4][0], rpyValues[5][0]);
+  psiRPY[1] = sensorDiff(-1, rpyValues[4][1], rpyValues[5][1]);
+  psiRPY[2] = sensorDiff(1, rpyValues[4][2], rpyValues[5][2]);
+
   for (int i = 0; i < 3; i++)
   {
-    phiRPY[i] = sensorOffset(-1, rpyValues[0][i], rpyValues[1][i]);     // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
-    dotPhi[i] = sensorOffset(-1, gyroValues[0][i], gyroValues[1][i]);   // same as above
-    thetaRPY[i] = sensorOffset(-1, rpyValues[2][i], rpyValues[3][i]);   // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
-    dotTheta[i] = sensorOffset(-1, gyroValues[2][i], gyroValues[3][i]); // same as above
-    psiRPY[i] = sensorOffset(-1, rpyValues[4][i], rpyValues[5][i]);     // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
-    dotPsi[i] = sensorOffset(-1, gyroValues[4][i], gyroValues[5][i]);   // same as above
+
+    // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+    dotPhi[i] = sensorDiff(-1, gyroValues[0][i], gyroValues[1][i]);   // same as above
+                                                                        // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+    dotTheta[i] = sensorDiff(-1, gyroValues[2][i], gyroValues[3][i]); // same as above
+                                                                        // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+    dotPsi[i] = sensorDiff(-1, gyroValues[4][i], gyroValues[5][i]);   // same as above
   }
+}
+
+void taskCalculateEuler()
+
+{
+  for (int i = 0; i < 6; i++)
+  {
+    rpyValues[i] = mpu9250[i].calculateEuler();
+    gyroValues[i] = mpu9250[i].getGyro();
+    accelValuesMss[i] = mpu9250[i].getAccelMss();
+    magValues[i] = mpu9250[i].getMag();
+  }
+
+  phiRPY[0] = sensorDiff(-1, rpyValues[0][0], rpyValues[1][0]);
+  phiRPY[1] = sensorDiff(-1, rpyValues[0][1], rpyValues[1][1]);
+  phiRPY[2] = sensorDiff(1, rpyValues[0][2], rpyValues[1][2]);
+  thetaRPY[0] = sensorDiff(-1, rpyValues[2][0], rpyValues[3][0]);
+  thetaRPY[1] = sensorDiff(-1, rpyValues[2][1], rpyValues[3][1]);
+  thetaRPY[2] = sensorDiff(-1, rpyValues[2][2], rpyValues[3][2]);
+  psiRPY[0] = sensorDiff(1, rpyValues[4][0], rpyValues[5][0]);
+  psiRPY[1] = sensorDiff(-1, rpyValues[4][1], rpyValues[5][1]);
+  psiRPY[2] = sensorDiff(1, rpyValues[4][2], rpyValues[5][2]);
+
+  for (int i = 0; i < 3; i++)
+  {
+
+    // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+    dotPhi[i] = sensorDiff(-1, gyroValues[0][i], gyroValues[1][i]);   // same as above
+    dotTheta[i] = sensorDiff(-1, gyroValues[2][i], gyroValues[3][i]); // same as above
+    dotPsi[i] = sensorDiff(-1, gyroValues[4][i], gyroValues[5][i]);   // same as above
+  }
+}
+
+void taskUpdatePlant()
+{
+  plantPhi(0) = phiRPY[0]; // Alpha Angle is required
+  plantPhi(1) = dotPhi[1]; // same as above
+  plantPhi(2) = omega[0];
+  plantTheta(0) = thetaRPY[0];
+  plantTheta(1) = dotTheta[1];
+  plantTheta(2) = omega[1];
+  plantPsi(0) = psiRPY[0];
+  plantPsi(1) = dotPsi[1];
+  plantPsi(2) = omega[2];
 }
 
 void taskGetOmega()
@@ -278,22 +349,9 @@ void taskGetOmega()
   adc[2] = readADC(3); // ADC 2 is dead on the logic board using ADCnumber 3
 
   // Update Omega Array
-  omega[0] = pwmToRads(adc[2]); //motors matched to subsystem
+  omega[0] = pwmToRads(adc[2]); // motors matched to subsystem
   omega[1] = pwmToRads(adc[0]);
   omega[2] = pwmToRads(adc[1]);
-}
-
-void taskUpdatePlant()
-{
-  plantPhi(0) = phiRPY[2]; // Pitch Angle is required
-  plantPhi(1) = dotPhi[1]; // same as above
-  plantPhi(2) = omega[0];
-  plantTheta(0) = thetaRPY[2];
-  plantTheta(1) = dotTheta[1];
-  plantTheta(2) = omega[1];
-  plantPsi(0) = psiRPY[2];
-  plantPsi(1) = dotPsi[1];
-  plantPsi(2) = omega[2];
 }
 
 void taskUpdateLQR()
@@ -303,7 +361,7 @@ void taskUpdateLQR()
   u[2] = updateLQR(lqrPsi, plantPsi);
 }
 
-void taskUpdateMotor()
+void taskCurrentController()
 {
   motorControl(0, u[0]); // update Phi
   motorControl(1, u[1]); // update Theta
@@ -312,11 +370,12 @@ void taskUpdateMotor()
 
 void taskUpdateFullState()
 {
-  taskCalculateRPY_Rads();
-  taskGetOmega();
+  taskCalculateEuler();
+  //  taskCalculateRPY_Rads();
   taskUpdatePlant();
+  taskGetOmega();
   taskUpdateLQR();
-  taskUpdateMotor();
+//  taskCurrentController();
 }
 
 //=========== Task Helper Functions ===========
@@ -330,7 +389,7 @@ void testConverge(int pin, int iteration, float range, float dt)
     iter = 0;
     test = 0;
   }
-  test = testing[pin].converge(rpyValues[pin][0], range, dt);
+  test = mpu9250[pin].converge(rpyValues[pin][0], range, dt);
   iter = iter + test;
   if (iter == iteration && sensorReady.isFirstIteration())
   {
@@ -395,34 +454,34 @@ void blinkCB()
 }
 
 //========================== RPY in Rads Functions
-void cs26PrintRPY_Rads()
+void cs26Print_Rads()
 {
-  taskPrintRPY_Rads(cs26);
+  taskPrint_Rads(cs26);
 }
 
-void cs14PrintRPY_Rads()
+void cs14Print_Rads()
 {
-  taskPrintRPY_Rads(cs14);
+  taskPrint_Rads(cs14);
 }
 
-void cs21PrintRPY_Rads()
+void cs21Print_Rads()
 {
-  taskPrintRPY_Rads(cs21);
+  taskPrint_Rads(cs21);
 }
 
-void cs27PrintRPY_Rads()
+void cs27Print_Rads()
 {
-  taskPrintRPY_Rads(cs27);
+  taskPrint_Rads(cs27);
 }
 
-void cs32PrintRPY_Rads()
+void cs32Print_Rads()
 {
-  taskPrintRPY_Rads(cs32);
+  taskPrint_Rads(cs32);
 }
 
-void cs25PrintRPY_Rads()
+void cs25Print_Rads()
 {
-  taskPrintRPY_Rads(cs25);
+  taskPrint_Rads(cs25);
 }
 
 //========================== Accel Raw Functions
