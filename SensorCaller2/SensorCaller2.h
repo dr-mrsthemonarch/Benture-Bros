@@ -25,11 +25,15 @@ private:
     std::array<float, 5> _dcm = {{0}}; // init array to save calculated rcm values
     struct Private;
     static constexpr float _radToDeg = 57.296;
+    static constexpr float _degToRad = 0.01745329;
     int _gp;
     int _filterRate;
     float _roll;
     float _pitch;
     float _yaw;
+    float _alpha;
+    float _beta;
+    float _gamma;
     std::array<float, 3> _accel;
     std::array<float, 3> _accelCalibrated;
     std::array<float, 3> _accelRaw;

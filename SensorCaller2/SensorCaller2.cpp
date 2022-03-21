@@ -76,28 +76,35 @@ std::array<float, 3> SensorCaller2::calculateEuler()
   sensors.readSensor();
   // use const as much as possible
   //  const  std::array<float, 3> _magento;
-  // gi * wi + vi calibration function
   _accel = {
-      sensors.getAccelX_mss()*_accelOffsets[0] + _accelOffsets[3],
-      sensors.getAccelY_mss()*_accelOffsets[1] + _accelOffsets[4],
-      sensors.getAccelZ_mss()*_accelOffsets[2] + _accelOffsets[5],
-  };
-  _gyro = {
-      sensors.getGyroX_rads(),
-      sensors.getGyroY_rads(),
-      sensors.getGyroZ_rads(),
-  };
+      sensors.getAccelX_mss(),
+      sensors.getAccelY_mss(),
+      sensors.getAccelZ_mss()};
+  _accelCalibrated = {
+      _accel[0] * _accelOffsets[0] + _accelOffsets[3],
+      _accel[1] * _accelOffsets[1] + _accelOffsets[4],
+      _accel[2] * _accelOffsets[2] + _accelOffsets[5]};
+  _accelRaw = {
+      sensors.getAccelX_raw(),
+      sensors.getAccelY_raw(),
+      sensors.getAccelZ_raw()};
+  _gyro = {//
+           sensors.getGyroX_rads(),
+           sensors.getGyroY_rads(),
+           sensors.getGyroZ_rads()};
+  _mag = {
+      sensors.getMagX_uT(),
+      sensors.getMagY_uT(),
+      sensors.getMagZ_uT()};
   _magneto = {
-      sensors.getMagX_uT() - _magOffsets[0],
-      sensors.getMagY_uT() - _magOffsets[1],
-      sensors.getMagZ_uT() - _magOffsets[2],
-  };
+      _mag[0] - _magOffsets[0],
+      _mag[1] - _magOffsets[1],
+      _mag[2] - _magOffsets[2]};
   float _mx = _magneto[0] * _magSoftironMatrix[0][0] + _magneto[1] * _magSoftironMatrix[0][1] + _magneto[2] * _magSoftironMatrix[0][2];
   float _my = _magneto[0] * _magSoftironMatrix[1][0] + _magneto[1] * _magSoftironMatrix[1][1] + _magneto[2] * _magSoftironMatrix[1][2];
   float _mz = _magneto[0] * _magSoftironMatrix[2][0] + _magneto[1] * _magSoftironMatrix[2][1] + _magneto[2] * _magSoftironMatrix[2][2];
 
   filter.update(_gyro[0], _gyro[1], _gyro[2], _accel[0], _accel[1], _accel[2], _mx, _my, _mz);
-
   filter.getQuaternion(&_q[0], &_q[1], &_q[2], &_q[3]); // euler angles may be too unstable consider quaternions
 
   _dcm[0] = Private::t13(_q[0], _q[1], _q[2], _q[3]); // calculate Richtungs cosinus matrix elemente
@@ -105,10 +112,11 @@ std::array<float, 3> SensorCaller2::calculateEuler()
   _dcm[2] = Private::t22(_q[0], _q[2]);
   _dcm[3] = Private::t23(_q[0], _q[1], _q[2], _q[3]);
   _dcm[4] = Private::t33(_q[0], _q[3]);
-  float _phi = Private::convertToRoll(_dcm[3]);
-  float _theta = Private::convertToPitch(_dcm[0], _dcm[4]);
-  float _psi = Private::convertToYaw(_dcm[1], _dcm[2]);
-  return {_phi, _theta, _psi};
+
+  float _alpha = Private::convertToRoll(_dcm[3]) * _degToRad;
+  float _beta = Private::convertToPitch(_dcm[0], _dcm[4]) * _degToRad;
+  float _gamma = Private::convertToYaw(_dcm[1], _dcm[2]) * _degToRad;
+  return {_alpha, _beta, _gamma};
 }
 
 std::array<float, 3> SensorCaller2::calculateRPY()
@@ -148,18 +156,17 @@ std::array<float, 3> SensorCaller2::calculateRPYRadians()
       sensors.getAccelY_mss(),
       sensors.getAccelZ_mss()};
   _accelCalibrated = {
-      _accel[0] - _accelOffsets[0],
-      _accel[1] - _accelOffsets[1],
-      _accel[2] - _accelOffsets[2]};
+      _accel[0] * _accelOffsets[0] + _accelOffsets[3],
+      _accel[1] * _accelOffsets[1] + _accelOffsets[4],
+      _accel[2] * _accelOffsets[2] + _accelOffsets[5]};
   _accelRaw = {
       sensors.getAccelX_raw(),
       sensors.getAccelY_raw(),
       sensors.getAccelZ_raw()};
-  _gyro = { // 
-      sensors.getGyroX_rads(),
-      sensors.getGyroY_rads(),
-      sensors.getGyroZ_rads()
-      };
+  _gyro = {//
+           sensors.getGyroX_rads(),
+           sensors.getGyroY_rads(),
+           sensors.getGyroZ_rads()};
   _mag = {
       sensors.getMagX_uT(),
       sensors.getMagY_uT(),
@@ -208,7 +215,7 @@ float SensorCaller2::getZAccelRaw()
 std::array<float, 3> SensorCaller2::getGyro()
 {
   std::array<float, 3> _swapped;
-  _swapped = {_gyro[0], -1*_gyro[2], _gyro[1]}; // gyro[0] = roll, gyro[2] = pitch, gyro[1] = yaw, gyro[1] *-1 to give same direction rotation
+  _swapped = {_gyro[0],  _gyro[2], _gyro[1]}; // gyro[0] = roll, gyro[2] = pitch, gyro[1] = yaw, gyro[1] *-1 to give same direction rotation
   return _swapped;
 }
 float SensorCaller2::getXGyro()
