@@ -8,6 +8,7 @@ void cs21PrintAccel_Raw();
 void cs27PrintAccel_Raw();
 void cs32PrintAccel_Raw();
 void cs25PrintAccel_Raw();
+void bnoPrintAccel_Raw();
 //========================== Accel Mss
 void cs26PrintAccel_Mss();
 void cs14PrintAccel_Mss();
@@ -15,6 +16,7 @@ void cs21PrintAccel_Mss();
 void cs27PrintAccel_Mss();
 void cs32PrintAccel_Mss();
 void cs25PrintAccel_Mss();
+void bnoPrintAccel_Mss();
 //========================== RPY Rads
 void cs26Print_Rads();
 void cs14Print_Rads();
@@ -22,6 +24,7 @@ void cs21Print_Rads();
 void cs27Print_Rads();
 void cs32Print_Rads();
 void cs25Print_Rads();
+void bnoPrint_Rads();
 //========================== Marg
 void cs26PrintMarg();
 void cs14PrintMarg();
@@ -29,18 +32,20 @@ void cs21PrintMarg();
 void cs27PrintMarg();
 void cs32PrintMarg();
 void cs25PrintMarg();
-//========================== Marg
+//========================== Gyro
 void cs26PrintGyro();
 void cs14PrintGyro();
 void cs21PrintGyro();
 void cs27PrintGyro();
 void cs32PrintGyro();
 void cs25PrintGyro();
+void bnoPrintGyro();
 //========================== Print Plants
 void plantPrintAll();
 void plantPrintPhi();
 void plantPrintTheta();
 void plantPrintPsi();
+void plantPrintLambda();
 
 void taskPrintU();
 
@@ -70,7 +75,6 @@ Task plantCalculate(1, TASK_FOREVER, &taskUpdatePlant);
 Task currentController(5, TASK_FOREVER, &taskCurrentController);
 Task doAll(1, TASK_FOREVER, &taskUpdateFullState);
 
-
 // Dynamic Tasks
 Task sensorReady(50, 50, &readyLED);
 
@@ -80,6 +84,7 @@ Task cs21_RPY(20, TASK_FOREVER, &cs21Print_Rads);
 Task cs27_RPY(20, TASK_FOREVER, &cs27Print_Rads);
 Task cs32_RPY(20, TASK_FOREVER, &cs32Print_Rads);
 Task cs25_RPY(20, TASK_FOREVER, &cs25Print_Rads);
+Task bno_RPY(20, TASK_FOREVER, &bnoPrint_Rads);
 
 Task cs26_Accel_Raw(10, TASK_FOREVER, &cs26PrintAccel_Raw);
 Task cs14_Accel_Raw(10, TASK_FOREVER, &cs14PrintAccel_Raw);
@@ -87,6 +92,7 @@ Task cs21_Accel_Raw(10, TASK_FOREVER, &cs21PrintAccel_Raw);
 Task cs27_Accel_Raw(10, TASK_FOREVER, &cs27PrintAccel_Raw);
 Task cs32_Accel_Raw(10, TASK_FOREVER, &cs32PrintAccel_Raw);
 Task cs25_Accel_Raw(10, TASK_FOREVER, &cs25PrintAccel_Raw);
+Task bno_Accel_Raw(10, TASK_FOREVER, &bnoPrintAccel_Raw);
 
 Task cs26_Accel_Mss(10, TASK_FOREVER, &cs26PrintAccel_Mss); // 100hz for relatively good statistic
 Task cs14_Accel_Mss(10, TASK_FOREVER, &cs14PrintAccel_Mss);
@@ -94,6 +100,7 @@ Task cs21_Accel_Mss(10, TASK_FOREVER, &cs21PrintAccel_Mss);
 Task cs27_Accel_Mss(10, TASK_FOREVER, &cs27PrintAccel_Mss);
 Task cs32_Accel_Mss(10, TASK_FOREVER, &cs32PrintAccel_Mss);
 Task cs25_Accel_Mss(10, TASK_FOREVER, &cs25PrintAccel_Mss);
+Task bno_Accel_Mss(10, TASK_FOREVER, &bnoPrintAccel_Mss);
 
 Task cs26_Marg(50, TASK_FOREVER, &cs26PrintMarg); // 20hz required for motioncal
 Task cs14_Marg(50, TASK_FOREVER, &cs14PrintMarg);
@@ -108,12 +115,14 @@ Task cs21_Gyro(20, TASK_FOREVER, &cs21PrintGyro);
 Task cs27_Gyro(20, TASK_FOREVER, &cs27PrintGyro);
 Task cs32_Gyro(20, TASK_FOREVER, &cs32PrintGyro);
 Task cs25_Gyro(20, TASK_FOREVER, &cs25PrintGyro);
+Task bno_Gyro(20, TASK_FOREVER, &bnoPrintGyro);
 
 Task printOmega(50, TASK_FOREVER, &taskPrintOmega);
 Task printPhi(20, TASK_FOREVER, &plantPrintPhi);
 Task printTheta(20, TASK_FOREVER, &plantPrintTheta);
 Task printPsi(20, TASK_FOREVER, &plantPrintPsi);
-Task printPhiThetaPsi(10, TASK_FOREVER, &plantPrintAll);
+Task printLambda(20, TASK_FOREVER, &plantPrintLambda);
+Task printPhiThetaPsiLambda(10, TASK_FOREVER, &plantPrintAll);
 Task printDebug(10, TASK_FOREVER, &taskPrintDebug);
 
 Task printU(50, TASK_FOREVER, &taskPrintU);
@@ -226,7 +235,9 @@ void plantPrintAll()
   Serial.print(",");
   Serial.print(plantTheta(0));
   Serial.print(",");
-  Serial.println(plantPsi(0));
+  Serial.print(plantPsi(0));
+  Serial.print(",");
+  Serial.println(plantLambda(0));
 }
 
 void taskPrintDebug()
@@ -288,9 +299,9 @@ void taskCalculateRPY_Rads()
 
     // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
     dotPhi[i] = sensorDiff(-1, gyroValues[0][i], gyroValues[1][i]);   // same as above
-                                                                        // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+                                                                      // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
     dotTheta[i] = sensorDiff(-1, gyroValues[2][i], gyroValues[3][i]); // same as above
-                                                                        // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
+                                                                      // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
     dotPsi[i] = sensorDiff(-1, gyroValues[4][i], gyroValues[5][i]);   // same as above
   }
 }
@@ -305,6 +316,27 @@ void taskCalculateEuler()
     accelValuesMss[i] = mpu9250[i].getAccelMss();
     magValues[i] = mpu9250[i].getMag();
   }
+  // Possible vector values can be:
+  // - VECTOR_ACCELEROMETER - m/s^2
+  // - VECTOR_MAGNETOMETER  - uT
+  // - VECTOR_GYROSCOPE     - rad/s
+  // - VECTOR_EULER         - degrees
+  // - VECTOR_LINEARACCEL   - m/s^2
+  // - VECTOR_GRAVITY       - m/s^2
+
+  vectorRPY = bnoSensor.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE); // get from bno
+  vectorGyro = bnoSensor.getVector(Adafruit_BNO055::VECTOR_EULER);
+  vectorAccel = bnoSensor.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
+  vectorMag = bnoSensor.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
+
+  for (int i = 0; i < 3; i++)
+  {
+    rpyValues[6][i] = vectorRPY[i];
+    gyroValues[6][i] = vectorGyro[i];
+    accelValuesMss[6][i] = vectorAccel[i];
+    magValues[6][i] = vectorMag[i];
+    lambdaRPY[i] = rpyValues[6][i];
+  }
 
   phiRPY[0] = sensorDiff(-1, rpyValues[0][0], rpyValues[1][0]);
   phiRPY[1] = sensorDiff(-1, rpyValues[0][1], rpyValues[1][1]);
@@ -318,11 +350,11 @@ void taskCalculateEuler()
 
   for (int i = 0; i < 3; i++)
   {
-
     // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
     dotPhi[i] = sensorDiff(-1, gyroValues[0][i], gyroValues[1][i]);   // same as above
     dotTheta[i] = sensorDiff(-1, gyroValues[2][i], gyroValues[3][i]); // same as above
     dotPsi[i] = sensorDiff(-1, gyroValues[4][i], gyroValues[5][i]);   // same as above
+    dotLambda[i] = gyroValues[6][i] * -1;
   }
 }
 
@@ -331,12 +363,18 @@ void taskUpdatePlant()
   plantPhi(0) = phiRPY[0]; // Alpha Angle is required
   plantPhi(1) = dotPhi[1]; // same as above
   plantPhi(2) = omega[0];
+
   plantTheta(0) = thetaRPY[0];
   plantTheta(1) = dotTheta[1];
   plantTheta(2) = omega[1];
+
   plantPsi(0) = psiRPY[0];
   plantPsi(1) = dotPsi[1];
   plantPsi(2) = omega[2];
+
+  plantLambda(0) = lambdaRPY[2];
+  plantLambda(1) = dotLambda[2];
+  plantLambda(2) = omega[2];
 }
 
 void taskGetOmega()
@@ -358,7 +396,7 @@ void taskUpdateLQR()
 {
   u[0] = updateLQR(lqrPhi, plantPhi);
   u[1] = updateLQR(lqrTheta, plantTheta);
-  u[2] = updateLQR(lqrPsi, plantPsi);
+  u[2] = updateLQR(lqrLambda, plantLambda);
 }
 
 void taskCurrentController()
@@ -375,7 +413,7 @@ void taskUpdateFullState()
   taskUpdatePlant();
   taskGetOmega();
   taskUpdateLQR();
-//  taskCurrentController();
+  //  taskCurrentController();
 }
 
 //=========== Task Helper Functions ===========
@@ -483,6 +521,10 @@ void cs25Print_Rads()
 {
   taskPrint_Rads(cs25);
 }
+void bnoPrint_Rads()
+{
+  taskPrint_Rads(bno);
+}
 
 //========================== Accel Raw Functions
 void cs26PrintAccel_Raw()
@@ -515,6 +557,10 @@ void cs25PrintAccel_Raw()
   taskPrintAccel_Raw(cs25);
 }
 
+void bnoPrintAccel_Raw()
+{
+  taskPrintAccel_Raw(bno);
+}
 //========================== Accel Mss Functions
 void cs26PrintAccel_Mss()
 {
@@ -544,6 +590,11 @@ void cs32PrintAccel_Mss()
 void cs25PrintAccel_Mss()
 {
   taskPrintAccel_Mss(cs25);
+}
+
+void bnoPrintAccel_Mss()
+{
+  taskPrintAccel_Mss(bno);
 }
 
 //========================== MARG For Calibration
@@ -608,6 +659,10 @@ void cs25PrintGyro()
   taskPrintGyro(cs25);
 }
 
+void bnoPrintGyro()
+{
+  taskPrintGyro(bno);
+}
 //========================== Plant Functions
 void plantPrintPhi()
 {
@@ -622,4 +677,9 @@ void plantPrintTheta()
 void plantPrintPsi()
 {
   taskPrintPlant(plantPsi);
+}
+
+void plantPrintLambda()
+{
+  taskPrintPlant(plantLambda);
 }

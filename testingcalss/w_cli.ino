@@ -35,6 +35,7 @@ void errorCallback(cmd_error *errorPtr)
     Serial.println(cli.toString());
   }
 }
+
 void helpCB(cmd *cmdPtr)
 {
   Command cmd(cmdPtr);
@@ -173,437 +174,6 @@ void lqrSetCB(cmd *cmdPtr)
 
 */
 
-void getRPYCB(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);                               // get arguments
-  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
-  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
-
-  Argument argCS = cmd.getArgument("c");
-  String pin = argCS.getValue();
-  int csPin = pin.toInt();
-
-  bool sensorOn = argOn.isSet();
-  bool sensorOff = argOff.isSet();
-
-  if (sensorOn)
-  {
-    switch (csPin)
-    {
-    case 26:
-      runner.addTask(cs26_RPY);
-      cs26_RPY.enable();
-      break;
-    case 14:
-      runner.addTask(cs14_RPY);
-      cs14_RPY.enable();
-      break;
-    case 21:
-      runner.addTask(cs21_RPY);
-      cs21_RPY.enable();
-      break;
-    case 27:
-      runner.addTask(cs27_RPY);
-      cs27_RPY.enable();
-      break;
-    case 32:
-      runner.addTask(cs32_RPY);
-      cs32_RPY.enable();
-      break;
-    case 25:
-      runner.addTask(cs25_RPY);
-      cs25_RPY.enable();
-      break;
-    }
-  }
-  else if (sensorOff)
-  {
-    switch (csPin)
-    {
-    case 26:
-      cs26_RPY.disable();
-      runner.deleteTask(cs26_RPY);
-      break;
-    case 14:
-      cs14_RPY.disable();
-      runner.deleteTask(cs14_RPY);
-      break;
-    case 21:
-      cs21_RPY.disable();
-      runner.deleteTask(cs21_RPY);
-      break;
-    case 27:
-      cs27_RPY.disable();
-      runner.deleteTask(cs27_RPY);
-      break;
-    case 32:
-      cs32_RPY.disable();
-      runner.deleteTask(cs32_RPY);
-      break;
-    case 25:
-      cs25_RPY.disable();
-      runner.deleteTask(cs25_RPY);
-      break;
-    }
-  }
-}
-void getAccelRawCB(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);                               // get arguments
-  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
-  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
-  Argument argCS = cmd.getArgument("c");
-  String pin = argCS.getValue();
-  int csPin = pin.toInt();
-
-  bool sensorOn = argOn.isSet();
-  bool sensorOff = argOff.isSet();
-
-  if (sensorOn)
-  {
-    switch (csPin)
-    {
-    case 26:
-      runner.addTask(cs26_Accel_Raw);
-      cs26_Accel_Raw.enable();
-      break;
-    case 14:
-      runner.addTask(cs14_Accel_Raw);
-      cs14_Accel_Raw.enable();
-      break;
-    case 21:
-      runner.addTask(cs21_Accel_Raw);
-      cs21_Accel_Raw.enable();
-      break;
-    case 27:
-      runner.addTask(cs27_Accel_Raw);
-      cs27_Accel_Raw.enable();
-      break;
-    case 32:
-      runner.addTask(cs32_Accel_Raw);
-      cs32_Accel_Raw.enable();
-      break;
-    case 25:
-      runner.addTask(cs25_Accel_Raw);
-      cs25_Accel_Raw.enable();
-      break;
-    }
-  }
-  else if (sensorOff)
-  {
-    switch (csPin)
-    {
-    case 26:
-      cs26_Accel_Raw.disable();
-      runner.deleteTask(cs26_Accel_Raw);
-      break;
-    case 14:
-      cs14_Accel_Raw.disable();
-      runner.deleteTask(cs14_Accel_Raw);
-      break;
-    case 21:
-      cs21_Accel_Raw.disable();
-      runner.deleteTask(cs21_Accel_Raw);
-      break;
-    case 27:
-      cs27_Accel_Raw.disable();
-      runner.deleteTask(cs27_Accel_Raw);
-      break;
-    case 32:
-      cs32_Accel_Raw.disable();
-      runner.deleteTask(cs32_Accel_Raw);
-      break;
-    case 25:
-      cs25_Accel_Raw.disable();
-      runner.deleteTask(cs25_Accel_Raw);
-      break;
-    }
-  }
-}
-void getAccelMssCB(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);                               // get arguments
-  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
-  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
-
-  Argument argCS = cmd.getArgument("c");
-  String pin = argCS.getValue();
-  int csPin = pin.toInt();
-
-  bool sensorOn = argOn.isSet();
-  bool sensorOff = argOff.isSet();
-
-  if (sensorOn)
-  {
-    switch (csPin)
-    {
-    case 26:
-      runner.addTask(cs26_Accel_Mss);
-      cs26_Accel_Mss.enable();
-      break;
-    case 14:
-      runner.addTask(cs14_Accel_Mss);
-      cs14_Accel_Mss.enable();
-      break;
-    case 21:
-      runner.addTask(cs21_Accel_Mss);
-      cs21_Accel_Mss.enable();
-      break;
-    case 27:
-      runner.addTask(cs27_Accel_Mss);
-      cs27_Accel_Mss.enable();
-      break;
-    case 32:
-      runner.addTask(cs32_Accel_Mss);
-      cs32_Accel_Mss.enable();
-      break;
-    case 25:
-      runner.addTask(cs25_Accel_Mss);
-      cs25_Accel_Mss.enable();
-      break;
-    }
-  }
-  else if (sensorOff)
-  {
-    switch (csPin)
-    {
-    case 26:
-      cs26_Accel_Mss.disable();
-      runner.deleteTask(cs26_Accel_Mss);
-      break;
-    case 14:
-      cs14_Accel_Mss.disable();
-      runner.deleteTask(cs14_Accel_Mss);
-      break;
-    case 21:
-      cs21_Accel_Mss.disable();
-      runner.deleteTask(cs21_Accel_Mss);
-      break;
-    case 27:
-      cs27_Accel_Mss.disable();
-      runner.deleteTask(cs27_Accel_Mss);
-      break;
-    case 32:
-      cs32_Accel_Mss.disable();
-      runner.deleteTask(cs32_Accel_Mss);
-      break;
-    case 25:
-      cs25_Accel_Mss.disable();
-      runner.deleteTask(cs25_Accel_Mss);
-      break;
-    }
-  }
-}
-
-void getMargCB(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);                               // get arguments
-  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
-  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
-
-  Argument argCS = cmd.getArgument("c");
-  String pin = argCS.getValue();
-  int csPin = pin.toInt();
-
-  bool sensorOn = argOn.isSet();
-  bool sensorOff = argOff.isSet();
-
-  if (sensorOn)
-  {
-    switch (csPin)
-    {
-    case 26:
-      runner.addTask(cs26_Marg);
-      cs26_Marg.enable();
-      break;
-    case 14:
-      runner.addTask(cs14_Marg);
-      cs14_Marg.enable();
-      break;
-    case 21:
-      runner.addTask(cs21_Marg);
-      cs21_Marg.enable();
-      break;
-    case 27:
-      runner.addTask(cs27_Marg);
-      cs27_Marg.enable();
-      break;
-    case 32:
-      runner.addTask(cs32_Marg);
-      cs32_Marg.enable();
-      break;
-    case 25:
-      runner.addTask(cs25_Marg);
-      cs25_Marg.enable();
-      break;
-    }
-  }
-  else if (sensorOff)
-  {
-    switch (csPin)
-    {
-    case 26:
-      cs26_Marg.disable();
-      runner.deleteTask(cs26_Marg);
-      break;
-    case 14:
-      cs14_Marg.disable();
-      runner.deleteTask(cs14_Marg);
-      break;
-    case 21:
-      cs21_Marg.disable();
-      runner.deleteTask(cs21_Marg);
-      break;
-    case 27:
-      cs27_Marg.disable();
-      runner.deleteTask(cs27_Marg);
-      break;
-    case 32:
-      cs32_Marg.disable();
-      runner.deleteTask(cs32_Marg);
-      break;
-    case 25:
-      cs25_Marg.disable();
-      runner.deleteTask(cs25_Marg);
-      break;
-    }
-  }
-}
-void getGyroCB(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);                               // get arguments
-  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
-  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
-
-  Argument argCS = cmd.getArgument("c");
-  String pin = argCS.getValue();
-  int csPin = pin.toInt();
-
-  bool sensorOn = argOn.isSet();
-  bool sensorOff = argOff.isSet();
-
-  if (sensorOn)
-  {
-    switch (csPin)
-    {
-    case 26:
-      runner.addTask(cs26_Gyro);
-      cs26_Gyro.enable();
-      break;
-    case 14:
-      runner.addTask(cs14_Gyro);
-      cs14_Gyro.enable();
-      break;
-    case 21:
-      runner.addTask(cs21_Gyro);
-      cs21_Gyro.enable();
-      break;
-    case 27:
-      runner.addTask(cs27_Gyro);
-      cs27_Gyro.enable();
-      break;
-    case 32:
-      runner.addTask(cs32_Gyro);
-      cs32_Gyro.enable();
-      break;
-    case 25:
-      runner.addTask(cs25_Gyro);
-      cs25_Gyro.enable();
-      break;
-    }
-  }
-  else if (sensorOff)
-  {
-    switch (csPin)
-    {
-    case 26:
-      cs26_Gyro.disable();
-      runner.deleteTask(cs26_Gyro);
-      break;
-    case 14:
-      cs14_Gyro.disable();
-      runner.deleteTask(cs14_Gyro);
-      break;
-    case 21:
-      cs21_Gyro.disable();
-      runner.deleteTask(cs21_Gyro);
-      break;
-    case 27:
-      cs27_Gyro.disable();
-      runner.deleteTask(cs27_Gyro);
-      break;
-    case 32:
-      cs32_Gyro.disable();
-      runner.deleteTask(cs32_Gyro);
-      break;
-    case 25:
-      cs25_Gyro.disable();
-      runner.deleteTask(cs25_Gyro);
-      break;
-    }
-  }
-}
-void getPlantCB(cmd *cmdPtr)
-{
-  Command cmd(cmdPtr);                               // get arguments
-  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
-  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
-  Argument argAll = cmd.getArgument("all");
-
-  Argument argCS = cmd.getArgument("p");
-  String angle = argCS.getValue();
-  int angleSelect = angle.toInt();
-
-  bool sensorOn = argOn.isSet();
-  bool sensorOff = argOff.isSet();
-
-  if (sensorOn)
-  {
-    switch (angleSelect)
-    {
-    case 0:
-      runner.addTask(printPhiThetaPsi);
-      printPhiThetaPsi.enable();
-      break;
-    case 1:
-
-      runner.addTask(printPhi);
-      printPhi.enable();
-      break;
-    case 2:
-      runner.addTask(printTheta);
-      printTheta.enable();
-      break;
-    case 3:
-      runner.addTask(printPsi);
-      printPsi.enable();
-      break;
-    }
-  }
-  else if (sensorOff)
-  {
-    switch (angleSelect)
-    {
-    case 0:
-      printPhiThetaPsi.disable();
-      runner.deleteTask(printPhiThetaPsi);
-      break;
-    case 1:
-      printPhi.disable();
-      runner.deleteTask(printPhi);
-      break;
-    case 2:
-      printTheta.disable();
-      runner.deleteTask(printTheta);
-      break;
-    case 3:
-      printPsi.disable();
-      runner.deleteTask(printPsi);
-      break;
-    }
-  }
-}
-
 void motorPrintCB(cmd *cmdPtr)
 {
   Command cmd(cmdPtr);                            // get arguments
@@ -611,7 +181,7 @@ void motorPrintCB(cmd *cmdPtr)
   Argument argOff = cmd.getArgument("d/isable,off");
   bool motorOn = argOn.isSet();
   bool motorOff = argOff.isSet();
- 
+
   if (motorOn)
   {
     runner.addTask(printOmega);
@@ -692,4 +262,478 @@ void motorControlCB(cmd *cmdPtr)
       motorControl(driveCurrent, 2);
       break;
     }
+}
+
+void getRPYCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+
+  Argument argCS = cmd.getArgument("c");
+  String pin = argCS.getValue();
+  int csPin = pin.toInt();
+
+  bool sensorOn = argOn.isSet();
+  bool sensorOff = argOff.isSet();
+
+  if (sensorOn)
+  {
+    switch (csPin)
+    {
+    case 26:
+      runner.addTask(cs26_RPY);
+      cs26_RPY.enable();
+      break;
+    case 14:
+      runner.addTask(cs14_RPY);
+      cs14_RPY.enable();
+      break;
+    case 21:
+      runner.addTask(cs21_RPY);
+      cs21_RPY.enable();
+      break;
+    case 27:
+      runner.addTask(cs27_RPY);
+      cs27_RPY.enable();
+      break;
+    case 32:
+      runner.addTask(cs32_RPY);
+      cs32_RPY.enable();
+      break;
+    case 25:
+      runner.addTask(cs25_RPY);
+      cs25_RPY.enable();
+      break;
+    case 77:
+      runner.addTask(bno_RPY);
+      bno_RPY.enable();
+      break;
+    }
+  }
+  else if (sensorOff)
+  {
+    switch (csPin)
+    {
+    case 26:
+      cs26_RPY.disable();
+      runner.deleteTask(cs26_RPY);
+      break;
+    case 14:
+      cs14_RPY.disable();
+      runner.deleteTask(cs14_RPY);
+      break;
+    case 21:
+      cs21_RPY.disable();
+      runner.deleteTask(cs21_RPY);
+      break;
+    case 27:
+      cs27_RPY.disable();
+      runner.deleteTask(cs27_RPY);
+      break;
+    case 32:
+      cs32_RPY.disable();
+      runner.deleteTask(cs32_RPY);
+      break;
+    case 25:
+      cs25_RPY.disable();
+      runner.deleteTask(cs25_RPY);
+      break;
+    case 77:
+      bno_RPY.disable();
+      runner.deleteTask(bno_RPY);
+      break;
+    }
+  }
+}
+
+void getAccelRawCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+  Argument argCS = cmd.getArgument("c");
+  String pin = argCS.getValue();
+  int csPin = pin.toInt();
+
+  bool sensorOn = argOn.isSet();
+  bool sensorOff = argOff.isSet();
+
+  if (sensorOn)
+  {
+    switch (csPin)
+    {
+    case 26:
+      runner.addTask(cs26_Accel_Raw);
+      cs26_Accel_Raw.enable();
+      break;
+    case 14:
+      runner.addTask(cs14_Accel_Raw);
+      cs14_Accel_Raw.enable();
+      break;
+    case 21:
+      runner.addTask(cs21_Accel_Raw);
+      cs21_Accel_Raw.enable();
+      break;
+    case 27:
+      runner.addTask(cs27_Accel_Raw);
+      cs27_Accel_Raw.enable();
+      break;
+    case 32:
+      runner.addTask(cs32_Accel_Raw);
+      cs32_Accel_Raw.enable();
+      break;
+    case 25:
+      runner.addTask(cs25_Accel_Raw);
+      cs25_Accel_Raw.enable();
+      break;
+    case 77:
+      runner.addTask(bno_Accel_Raw);
+      bno_Accel_Raw.enable();
+      break;
+    }
+  }
+  else if (sensorOff)
+  {
+    switch (csPin)
+    {
+    case 26:
+      cs26_Accel_Raw.disable();
+      runner.deleteTask(cs26_Accel_Raw);
+      break;
+    case 14:
+      cs14_Accel_Raw.disable();
+      runner.deleteTask(cs14_Accel_Raw);
+      break;
+    case 21:
+      cs21_Accel_Raw.disable();
+      runner.deleteTask(cs21_Accel_Raw);
+      break;
+    case 27:
+      cs27_Accel_Raw.disable();
+      runner.deleteTask(cs27_Accel_Raw);
+      break;
+    case 32:
+      cs32_Accel_Raw.disable();
+      runner.deleteTask(cs32_Accel_Raw);
+      break;
+    case 25:
+      cs25_Accel_Raw.disable();
+      runner.deleteTask(cs25_Accel_Raw);
+      break;
+    case 77:
+      bno_Accel_Raw.disable();
+      runner.deleteTask(bno_Accel_Raw);
+      break;
+    }
+  }
+}
+
+void getAccelMssCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+
+  Argument argCS = cmd.getArgument("c");
+  String pin = argCS.getValue();
+  int csPin = pin.toInt();
+
+  bool sensorOn = argOn.isSet();
+  bool sensorOff = argOff.isSet();
+
+  if (sensorOn)
+  {
+    switch (csPin)
+    {
+    case 26:
+      runner.addTask(cs26_Accel_Mss);
+      cs26_Accel_Mss.enable();
+      break;
+    case 14:
+      runner.addTask(cs14_Accel_Mss);
+      cs14_Accel_Mss.enable();
+      break;
+    case 21:
+      runner.addTask(cs21_Accel_Mss);
+      cs21_Accel_Mss.enable();
+      break;
+    case 27:
+      runner.addTask(cs27_Accel_Mss);
+      cs27_Accel_Mss.enable();
+      break;
+    case 32:
+      runner.addTask(cs32_Accel_Mss);
+      cs32_Accel_Mss.enable();
+      break;
+    case 25:
+      runner.addTask(cs25_Accel_Mss);
+      cs25_Accel_Mss.enable();
+      break;
+    case 77:
+      runner.addTask(bno_Accel_Mss);
+      bno_Accel_Mss.enable();
+      break;
+    }
+  }
+  else if (sensorOff)
+  {
+    switch (csPin)
+    {
+    case 26:
+      cs26_Accel_Mss.disable();
+      runner.deleteTask(cs26_Accel_Mss);
+      break;
+    case 14:
+      cs14_Accel_Mss.disable();
+      runner.deleteTask(cs14_Accel_Mss);
+      break;
+    case 21:
+      cs21_Accel_Mss.disable();
+      runner.deleteTask(cs21_Accel_Mss);
+      break;
+    case 27:
+      cs27_Accel_Mss.disable();
+      runner.deleteTask(cs27_Accel_Mss);
+      break;
+    case 32:
+      cs32_Accel_Mss.disable();
+      runner.deleteTask(cs32_Accel_Mss);
+      break;
+    case 25:
+      cs25_Accel_Mss.disable();
+      runner.deleteTask(cs25_Accel_Mss);
+      break;
+    case 77:
+      bno_Accel_Mss.disable();
+      runner.deleteTask(bno_Accel_Mss);
+      break;
+    }
+  }
+}
+
+void getMargCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+
+  Argument argCS = cmd.getArgument("c");
+  String pin = argCS.getValue();
+  int csPin = pin.toInt();
+
+  bool sensorOn = argOn.isSet();
+  bool sensorOff = argOff.isSet();
+
+  if (sensorOn)
+  {
+    switch (csPin)
+    {
+    case 26:
+      runner.addTask(cs26_Marg);
+      cs26_Marg.enable();
+      break;
+    case 14:
+      runner.addTask(cs14_Marg);
+      cs14_Marg.enable();
+      break;
+    case 21:
+      runner.addTask(cs21_Marg);
+      cs21_Marg.enable();
+      break;
+    case 27:
+      runner.addTask(cs27_Marg);
+      cs27_Marg.enable();
+      break;
+    case 32:
+      runner.addTask(cs32_Marg);
+      cs32_Marg.enable();
+      break;
+    case 25:
+      runner.addTask(cs25_Marg);
+      cs25_Marg.enable();
+      break;
+    }
+  }
+  else if (sensorOff)
+  {
+    switch (csPin)
+    {
+    case 26:
+      cs26_Marg.disable();
+      runner.deleteTask(cs26_Marg);
+      break;
+    case 14:
+      cs14_Marg.disable();
+      runner.deleteTask(cs14_Marg);
+      break;
+    case 21:
+      cs21_Marg.disable();
+      runner.deleteTask(cs21_Marg);
+      break;
+    case 27:
+      cs27_Marg.disable();
+      runner.deleteTask(cs27_Marg);
+      break;
+    case 32:
+      cs32_Marg.disable();
+      runner.deleteTask(cs32_Marg);
+      break;
+    case 25:
+      cs25_Marg.disable();
+      runner.deleteTask(cs25_Marg);
+      break;
+    }
+  }
+}
+
+void getGyroCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+
+  Argument argCS = cmd.getArgument("c");
+  String pin = argCS.getValue();
+  int csPin = pin.toInt();
+
+  bool sensorOn = argOn.isSet();
+  bool sensorOff = argOff.isSet();
+
+  if (sensorOn)
+  {
+    switch (csPin)
+    {
+    case 26:
+      runner.addTask(cs26_Gyro);
+      cs26_Gyro.enable();
+      break;
+    case 14:
+      runner.addTask(cs14_Gyro);
+      cs14_Gyro.enable();
+      break;
+    case 21:
+      runner.addTask(cs21_Gyro);
+      cs21_Gyro.enable();
+      break;
+    case 27:
+      runner.addTask(cs27_Gyro);
+      cs27_Gyro.enable();
+      break;
+    case 32:
+      runner.addTask(cs32_Gyro);
+      cs32_Gyro.enable();
+      break;
+    case 25:
+      runner.addTask(cs25_Gyro);
+      cs25_Gyro.enable();
+      break;
+    case 77:
+      runner.addTask(bno_Gyro);
+      bno_Gyro.enable();
+      break;
+    }
+  }
+  else if (sensorOff)
+  {
+    switch (csPin)
+    {
+    case 26:
+      cs26_Gyro.disable();
+      runner.deleteTask(cs26_Gyro);
+      break;
+    case 14:
+      cs14_Gyro.disable();
+      runner.deleteTask(cs14_Gyro);
+      break;
+    case 21:
+      cs21_Gyro.disable();
+      runner.deleteTask(cs21_Gyro);
+      break;
+    case 27:
+      cs27_Gyro.disable();
+      runner.deleteTask(cs27_Gyro);
+      break;
+    case 32:
+      cs32_Gyro.disable();
+      runner.deleteTask(cs32_Gyro);
+      break;
+    case 25:
+      cs25_Gyro.disable();
+      runner.deleteTask(cs25_Gyro);
+      break;
+    case 77:
+      bno_Gyro.disable();
+      runner.deleteTask(bno_Gyro);
+      break;
+    }
+  }
+}
+
+void getPlantCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+  Argument argAll = cmd.getArgument("all");
+
+  Argument argCS = cmd.getArgument("p");
+  String angle = argCS.getValue();
+  int angleSelect = angle.toInt();
+
+  bool sensorOn = argOn.isSet();
+  bool sensorOff = argOff.isSet();
+
+  if (sensorOn)
+  {
+    switch (angleSelect)
+    {
+    case 0:
+      runner.addTask(printPhiThetaPsiLambda);
+      printPhiThetaPsiLambda.enable();
+      break;
+    case 1:
+      runner.addTask(printPhi);
+      printPhi.enable();
+      break;
+    case 2:
+      runner.addTask(printTheta);
+      printTheta.enable();
+      break;
+    case 3:
+      runner.addTask(printPsi);
+      printPsi.enable();
+      break;
+    case 4:
+      runner.addTask(printLambda);
+      printLambda.enable();
+      break;
+    }
+  }
+  else if (sensorOff)
+  {
+    switch (angleSelect)
+    {
+    case 0:
+      printPhiThetaPsiLambda.disable();
+      runner.deleteTask(printPhiThetaPsiLambda);
+      break;
+    case 1:
+      printPhi.disable();
+      runner.deleteTask(printPhi);
+      break;
+    case 2:
+      printTheta.disable();
+      runner.deleteTask(printTheta);
+      break;
+    case 3:
+      printPsi.disable();
+      runner.deleteTask(printPsi);
+      break;
+    case 4:
+      printLambda.disable();
+      runner.deleteTask(printLambda);
+      break;
+    }
+  }
 }

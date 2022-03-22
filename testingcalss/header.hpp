@@ -10,6 +10,7 @@
 #include <SimpleCLI.h>
 #include <Adafruit_ADS1X15.h> //External ADC
 
+Adafruit_BNO055 bnoSensor = Adafruit_BNO055(-1, 0x28);
 using namespace Eigen;
 
 SimpleCLI cli;
@@ -20,6 +21,7 @@ int cs21 = 2;
 int cs27 = 3;
 int cs32 = 4;
 int cs25 = 5;
+int bno = 6;
 
 std::array<int, 6> cs = {26, 14, 21, 27, 32, 25};
 bool LED_state = false;
@@ -45,12 +47,12 @@ String value, value1, value2, switcher, chipselect = "0";
 String stringRead;
 
 std::array<std::array<float, 3>, 3> LQRController = {0};
-std::array<std::array<float, 3>, 6> accelValues = {0};
-std::array<std::array<float, 3>, 6> accelValuesRaw = {0};
-std::array<std::array<float, 3>, 6> accelValuesMss = {0};
-std::array<std::array<float, 3>, 6> gyroValues = {0};
-std::array<std::array<float, 3>, 6> magValues = {0};
-std::array<std::array<float, 3>, 6> rpyValues = {0};
+std::array<std::array<float, 3>, 7> accelValues = {0};
+std::array<std::array<float, 3>, 7> accelValuesRaw = {0};
+std::array<std::array<float, 3>, 7> accelValuesMss = {0};
+std::array<std::array<float, 3>, 7> gyroValues = {0};
+std::array<std::array<float, 3>, 7> magValues = {0};
+std::array<std::array<float, 3>, 7> rpyValues = {0};
 std::array<std::array<float, 3>, 6> offsetValues = {0};
 
 // Class objects
@@ -69,19 +71,27 @@ std::array<float, 3> thetaRPY;
 std::array<float, 3> dotTheta;
 std::array<float, 3> psiRPY;
 std::array<float, 3> dotPsi;
+std::array<float, 3> lambdaRPY;
+std::array<float, 3> dotLambda;
 std::array<float, 3> matPhi = {-150, -25, -0.06};   // gain matrix
 std::array<float, 3> matTheta = {-150, -25, -0.06}; // gain matrix
 std::array<float, 3> matPsi = {-20, -20, -0.02};    // gain matrix
+std::array<float, 3> matLambda = {-20,-20,-0.02};   // gain matrix
 std::array<float, 3> u;                             // motor input array
 std::array<float, 6> magnetic_field = {37.26, 34.86, 35.74, 34.18, 0, 31.86};
 std::array<float, 3> omega = {0, 0, 0}; // motor rad/s array
+imu::Vector<3> vectorRPY;
+imu::Vector<3> vectorGyro;
+imu::Vector<3> vectorMag;
+imu::Vector<3> vectorAccel;
+
 
 Vector3f plantPhi(phiRPY[0], phiRPY[1], phiRPY[2]);
 Vector3f plantTheta(thetaRPY[0], thetaRPY[1], thetaRPY[2]);
 Vector3f plantPsi(psiRPY[0], psiRPY[1], psiRPY[2]);
+Vector3f plantLambda(lambdaRPY[0],lambdaRPY[1],lambdaRPY[2]);
 
 Vector3f lqrPhi(matPhi[0], matPhi[1], matPhi[2]);
 Vector3f lqrTheta(matTheta[0], matTheta[1], matTheta[2]);
 Vector3f lqrPsi(matPsi[0], matPsi[1], matPsi[2]);
-
-Adafruit_BNO055 bno = Adafruit_BNO055(-1, 0x28);
+Vector3f lqrLambda(matLambda[0],matLambda[1],matLambda[2]);
