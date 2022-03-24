@@ -8,13 +8,14 @@ void setup()
   }
 
   /* Initialise the sensor */
-  if(!bnoSensor.begin())
+  if (!bnoSensor.begin())
   {
     /* There was a problem detecting the BNO055 ... check your connections */
     Serial.print("Ooops, no BNO055 detected ... Check your wiring or I2C ADDR!");
-    while(1);
+    while (1)
+      ;
   }
-
+  Serial.print("Bno Started");
   delay(100);
   pinMode(LED_BUILTIN, OUTPUT);
   for (int i; i < 6; i++)
@@ -97,12 +98,17 @@ void setup()
   cmdGetPlant.addFlagArgument("d/isable,off");
   cmdGetPlant.addArgument("p");
 
+  cmdLQRPrint = cli.addCommand("lqrPr", lqrPrintCB);
+  cmdLQRPrint.setDescription("Print Controller Output");
+  cmdLQRPrint.addFlagArgument("e/nable,on");
+  cmdLQRPrint.addFlagArgument("d/isable,off");
+
   cmdLQR = cli.addCommand("lqr", lqrCB);
-  cmdLQR.setDescription("Turn on LQR Controllers, print Controller Output, set Gain values");
+  cmdLQR.setDescription("Turn on LQR Controllers, 0 All, 1 Phi, 2 Theta, 3 Psi");
   cmdLQR.addFlagArgument("e/nable,on");
   cmdLQR.addFlagArgument("d/isable,off");
   cmdLQR.addFlagArgument("c");
-  cmdLQR.addFlagArgument("p/rint");
+  cmdLQR.addArgument("s");
 
   modLQR = cli.addCommand("lqrSet", lqrSetCB);
   modLQR.setDescription("Modify lqr gains for subsystem p_i");
@@ -122,20 +128,24 @@ void setup()
   runner.addTask(serialRead);
   runner.addTask(blinker);
   runner.addTask(converger);
-//  runner.addTask(angleCalculateRPY_Rads);
-//  runner.addTask(angleCalculateEuler);
-//  runner.addTask(plantCalculate);
-//  runner.addTask(currentController);
-//  runner.addTask(controller);
+  //  runner.addTask(angleCalculateRPY_Rads);
+  //  runner.addTask(angleCalculateEuler);
+  //  runner.addTask(plantCalculate);
+
+  //  runner.addTask(controller);
+//  runner.addTask(currentControllerAll);
+//  runner.addTask(currentControllerPhi);
+//  runner.addTask(currentControllerTheta);
+//  runner.addTask(currentControllerPsi);
   runner.addTask(probeADC);
   runner.addTask(doAll);
 
-//angleCalculateEuler.enable();
-//  angleCalculateRPY_Rads.enable();
   probeADC.enable();
+  // angleCalculateEuler.enable();
+  // angleCalculateRPY_Rads.enable();
   //  converger.enable();
-//  plantCalculate.enable();
-//  controller.enable();
+  //  plantCalculate.enable();
+  //  controller.enable();
   doAll.enable();
   serialRead.enable();
 }

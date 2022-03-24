@@ -10,6 +10,7 @@ Command cmdGetRPY;
 Command cmdGetMarg;
 Command cmdGetPlant;
 Command cmdLQR;
+Command cmdLQRPrint;
 Command modLQR;
 Command cmdDebug;
 
@@ -75,6 +76,27 @@ void convergeCB(cmd *cmdPtr)
   Serial.println("command accepted");
 }
 
+void lqrPrintCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+
+  bool lqrOn = argOn.isSet();
+  bool lqrOff = argOff.isSet();
+
+  if (lqrOn)
+  {
+    runner.addTask(printU);
+    printU.enable();
+  }
+  else
+  {
+    printU.disable();
+    runner.deleteTask(printU);
+  }
+}
+
 void lqrCB(cmd *cmdPtr)
 {
   Command cmd(cmdPtr);                               // get arguments
@@ -82,30 +104,65 @@ void lqrCB(cmd *cmdPtr)
   Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
   Argument argC = cmd.getArgument("c");              // turn on/off controller with on argument
 
-  Argument argPrint = cmd.getArgument("p/rint");
+  Argument argSub = cmd.getArgument("s");
+  String subp = argSub.getValue();
+  int pi = subp.toInt();
 
   bool c = argC.isSet();
-  bool printer = argPrint.isSet();
   bool lqrOn = argOn.isSet();
   bool lqrOff = argOff.isSet();
 
-  if (lqrOn && printer)
+  if (lqrOn && c)
   {
-    runner.addTask(printU);
-    printU.enable();
-  }
-  else if (lqrOff && printer)
-  {
-    printU.disable();
-    runner.deleteTask(printU);
-  }
-  else if (lqrOn && c)
-  {
-    currentController.enable();
+    switch (pi)
+    {
+    case 0:
+      enableMotor();
+      runner.addTask(currentControllerAll);
+      currentControllerAll.enable();
+      break;
+    case 1:
+      enableMotor();
+      runner.addTask(currentControllerPhi);
+      currentControllerPhi.enable();
+      break;
+    case 2:
+      enableMotor();
+      runner.addTask(currentControllerTheta);
+      currentControllerTheta.enable();
+      break;
+    case 3:
+      enableMotor();
+      runner.addTask(currentControllerPsi);
+      currentControllerPsi.enable();
+      break;
+    }
   }
   else if (lqrOff && c)
   {
-    currentController.disable();
+    switch (pi)
+    {
+    case 0:
+      disableMotor();
+      currentControllerAll.disable();
+      runner.deleteTask(currentControllerAll);
+      break;
+    case 1:
+      disableMotor();
+      currentControllerPhi.disable();
+      runner.deleteTask(currentControllerPhi);
+      break;
+    case 2:
+      disableMotor();
+      currentControllerTheta.disable();
+      runner.deleteTask(currentControllerTheta);
+      break;
+    case 3:
+      disableMotor();
+      currentControllerPsi.disable();
+      runner.deleteTask(currentControllerPsi);
+      break;
+    }
   }
 }
 
@@ -115,15 +172,15 @@ void lqrSetCB(cmd *cmdPtr)
 
   Argument argK1 = cmd.getArgument("k1");
   String k1 = argK1.getValue();
-  float gain1 = k1.toInt();
+  float gain1 = k1.toFloat();
 
   Argument argK2 = cmd.getArgument("k2");
   String k2 = argK2.getValue();
-  float gain2 = k2.toInt();
+  float gain2 = k2.toFloat();
 
   Argument argK3 = cmd.getArgument("k3");
   String k3 = argK3.getValue();
-  float gain3 = k3.toInt();
+  float gain3 = k3.toFloat();
 
   Argument argSub = cmd.getArgument("p");
   String subp = argSub.getValue();
@@ -145,34 +202,27 @@ void lqrSetCB(cmd *cmdPtr)
     lqrTheta(0) = gain1;
     lqrTheta(1) = gain2;
     lqrTheta(2) = gain3;
-    Serial.print(lqrTheta(1));
+    Serial.print(lqrTheta(0));
     Serial.print(",");
-    Serial.print(lqrTheta(2));
+    Serial.print(lqrTheta(1));
     Serial.print(",");
     Serial.println(lqrTheta(2));
     break;
   case 2:
+    lqrLambda(0) = gain1;
+    lqrLambda(1) = gain2;
+    lqrLambda(2) = gain3;
     lqrPsi(0) = gain1;
     lqrPsi(1) = gain2;
     lqrPsi(2) = gain3;
-    Serial.print(lqrPsi(0));
+    Serial.print(lqrLambda(0));
     Serial.print(",");
-    Serial.print(lqrPsi(1));
+    Serial.print(lqrLambda(1));
     Serial.print(",");
-    Serial.println(lqrPsi(2));
+    Serial.println(lqrLambda(2));
     break;
   }
 }
-/*
-  use cases
-  lqr -on -print        turn on all controller values printing
-  lqr -off -print       turns off all printing
-  lqr -on -c            turns on all controllers
-  lqr -off -c           turns off all controllers
-
-  lqr -s/et -p 0,1,2 -k1/2/3 150.2
-
-*/
 
 void motorPrintCB(cmd *cmdPtr)
 {

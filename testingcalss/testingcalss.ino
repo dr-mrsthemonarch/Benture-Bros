@@ -55,25 +55,34 @@ void readyLED();
 void taskCalculateRPY_Rads();
 void taskCalculateEuler();
 void taskReadSerial();
-void taskUpdateLQR();
+void taskUpdateLQRAll();
+void taskUpdateLQRPhi();
+void taskUpdateLQRTheta();
+void taskUpdateLQRPsi();
 void taskUpdatePlant();
 void taskGetOmega();
-void taskCurrentController();
+void taskCurrentControllerAll();
+void taskCurrentControllerPhi();
+void taskCurrentControllerTheta();
+void taskCurrentControllerPsi();
 void taskPrintDebug();
 void taskPrintOmega();
 void taskUpdateFullState();
 
 // Tasks to always run
-Task serialRead(100, TASK_FOREVER, &taskReadSerial);
+Task serialRead(20, TASK_FOREVER, &taskReadSerial);
 Task converger(11, TASK_FOREVER, &taskConverge);
 Task blinker(500, TASK_FOREVER, &blinkCB);
 Task probeADC(5, TASK_FOREVER, &taskGetOmega);
 Task angleCalculateRPY_Rads(1, TASK_FOREVER, &taskCalculateRPY_Rads);
 Task angleCalculateEuler(1, TASK_FOREVER, &taskCalculateEuler);
-Task controller(5, TASK_FOREVER, &taskUpdateLQR);
+Task controller(5, TASK_FOREVER, &taskUpdateLQRAll);
 Task plantCalculate(1, TASK_FOREVER, &taskUpdatePlant);
-Task currentController(5, TASK_FOREVER, &taskCurrentController);
-Task doAll(1, TASK_FOREVER, &taskUpdateFullState);
+Task currentControllerAll(4, TASK_FOREVER, &taskCurrentControllerAll);
+Task currentControllerPhi(4, TASK_FOREVER, &taskCurrentControllerPhi);
+Task currentControllerTheta(4, TASK_FOREVER, &taskCurrentControllerTheta);
+Task currentControllerPsi(4, TASK_FOREVER, &taskCurrentControllerPsi);
+Task doAll(2, TASK_FOREVER, &taskUpdateFullState);
 
 // Dynamic Tasks
 Task sensorReady(50, 50, &readyLED);
@@ -324,8 +333,8 @@ void taskCalculateEuler()
   // - VECTOR_LINEARACCEL   - m/s^2
   // - VECTOR_GRAVITY       - m/s^2
 
-  vectorRPY = bnoSensor.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE); // get from bno
-  vectorGyro = bnoSensor.getVector(Adafruit_BNO055::VECTOR_EULER);
+  vectorRPY = bnoSensor.getVector(Adafruit_BNO055::VECTOR_EULER);      // get from bno
+  vectorGyro = bnoSensor.getVector(Adafruit_BNO055::VECTOR_GYROSCOPE); // is deg/s NOT rad/s
   vectorAccel = bnoSensor.getVector(Adafruit_BNO055::VECTOR_ACCELEROMETER);
   vectorMag = bnoSensor.getVector(Adafruit_BNO055::VECTOR_MAGNETOMETER);
 
@@ -335,44 +344,55 @@ void taskCalculateEuler()
     gyroValues[6][i] = vectorGyro[i];
     accelValuesMss[6][i] = vectorAccel[i];
     magValues[6][i] = vectorMag[i];
-    lambdaRPY[i] = rpyValues[6][i];
+    lambdaRPY[i] = rpyValues[6][i] * DEG_TO_RAD;
   }
 
-  phiRPY[0] = sensorDiff(-1, rpyValues[0][0], rpyValues[1][0]);
-  phiRPY[1] = sensorDiff(-1, rpyValues[0][1], rpyValues[1][1]);
-  phiRPY[2] = sensorDiff(1, rpyValues[0][2], rpyValues[1][2]);
-  thetaRPY[0] = sensorDiff(-1, rpyValues[2][0], rpyValues[3][0]);
-  thetaRPY[1] = sensorDiff(-1, rpyValues[2][1], rpyValues[3][1]);
-  thetaRPY[2] = sensorDiff(-1, rpyValues[2][2], rpyValues[3][2]);
-  psiRPY[0] = sensorDiff(1, rpyValues[4][0], rpyValues[5][0]);
-  psiRPY[1] = sensorDiff(-1, rpyValues[4][1], rpyValues[5][1]);
-  psiRPY[2] = sensorDiff(1, rpyValues[4][2], rpyValues[5][2]);
+  phiRPY[0] = sensorMean(-1, rpyValues[0][0], rpyValues[1][0]);
+  phiRPY[1] = sensorMean(1, rpyValues[0][1], rpyValues[1][1]);
+  phiRPY[2] = sensorMean(1, rpyValues[0][2], rpyValues[1][2]);
+  thetaRPY[0] = sensorMean(-1, rpyValues[2][0], rpyValues[3][0]);
+  thetaRPY[1] = sensorMean(1, rpyValues[2][1], rpyValues[3][1]);
+  thetaRPY[2] = sensorMean(1, rpyValues[2][2], rpyValues[3][2]);
+  psiRPY[0] = sensorMean(-1, rpyValues[4][0], rpyValues[5][0]);
+  psiRPY[1] = sensorMean(1, rpyValues[4][1], rpyValues[5][1]);
+  psiRPY[2] = sensorMean(1, rpyValues[4][2], rpyValues[5][2]);
 
+  /*
+    phiRPY[0] = sensorDiff(-1, rpyValues[0][0], rpyValues[1][0]);
+    phiRPY[1] = sensorDiff(-1, rpyValues[0][1], rpyValues[1][1]);
+    phiRPY[2] = sensorDiff(1, rpyValues[0][2], rpyValues[1][2]);
+    thetaRPY[0] = sensorDiff(-1, rpyValues[2][0], rpyValues[3][0]);
+    thetaRPY[1] = sensorDiff(-1, rpyValues[2][1], rpyValues[3][1]);
+    thetaRPY[2] = sensorDiff(-1, rpyValues[2][2], rpyValues[3][2]);
+    psiRPY[0] = sensorDiff(1, rpyValues[4][0], rpyValues[5][0]);
+    psiRPY[1] = sensorDiff(-1, rpyValues[4][1], rpyValues[5][1]);
+    psiRPY[2] = sensorDiff(1, rpyValues[4][2], rpyValues[5][2]);
+  */
   for (int i = 0; i < 3; i++)
   {
     // angle phi is equal to gain times sensor 1 angle [i] subtract sensor sensor 2 angle [i]
-    dotPhi[i] = sensorDiff(-1, gyroValues[0][i], gyroValues[1][i]);   // same as above
-    dotTheta[i] = sensorDiff(-1, gyroValues[2][i], gyroValues[3][i]); // same as above
-    dotPsi[i] = sensorDiff(-1, gyroValues[4][i], gyroValues[5][i]);   // same as above
-    dotLambda[i] = gyroValues[6][i] * -1;
+    dotPhi[i] = sensorMean(-1, gyroValues[0][i], gyroValues[1][i]);   // same as above
+    dotTheta[i] = sensorMean(-1, gyroValues[2][i], gyroValues[3][i]); // same as above
+    dotPsi[i] = sensorMean(-1, gyroValues[4][i], gyroValues[5][i]);   // same as above
+    dotLambda[i] = gyroValues[6][i] * -1 * DEG_TO_RAD;
   }
 }
 
 void taskUpdatePlant()
 {
-  plantPhi(0) = phiRPY[0]; // Alpha Angle is required
+  plantPhi(0) = phiRPY[0] + offsetAngle[0]; // Alpha Angle is required
   plantPhi(1) = dotPhi[1]; // same as above
   plantPhi(2) = omega[0];
 
-  plantTheta(0) = thetaRPY[0];
+  plantTheta(0) = -1 * thetaRPY[0] + offsetAngle[1];
   plantTheta(1) = dotTheta[1];
   plantTheta(2) = omega[1];
 
-  plantPsi(0) = psiRPY[0];
+  plantPsi(0) = -1 * psiRPY[0] + offsetAngle[2];
   plantPsi(1) = dotPsi[1];
   plantPsi(2) = omega[2];
 
-  plantLambda(0) = lambdaRPY[2];
+  plantLambda(0) = lambdaRPY[0] - M_PI_2 + offsetAngle[3]; // add offset for bno starting angle
   plantLambda(1) = dotLambda[2];
   plantLambda(2) = omega[2];
 }
@@ -392,18 +412,51 @@ void taskGetOmega()
   omega[2] = pwmToRads(adc[1]);
 }
 
-void taskUpdateLQR()
+void taskUpdateLQRAll()
 {
   u[0] = updateLQR(lqrPhi, plantPhi);
   u[1] = updateLQR(lqrTheta, plantTheta);
-  u[2] = updateLQR(lqrLambda, plantLambda);
+  u[2] = updateLQR(lqrPsi, plantPsi);
+  // u[2] = updateLQR(lqrLambda, plantLambda);
 }
 
-void taskCurrentController()
+void taskUpdateLQRPhi()
 {
-  motorControl(0, u[0]); // update Phi
-  motorControl(1, u[1]); // update Theta
-  motorControl(2, u[2]); // update Psi
+  u[0] = updateLQR(lqrPhi, plantPhi);
+}
+
+void taskUpdateLQRTheta()
+{
+
+  u[1] = updateLQR(lqrTheta, plantTheta);
+}
+
+void taskUpdateLQRPsi()
+{
+  u[2] = updateLQR(lqrPsi, plantPsi) ;
+}
+
+void taskCurrentControllerAll()
+{
+  // motorControl(signal, channel)
+  motorControl(u[0], 0); // update Phi
+  motorControl(u[1], 1); // update Theta
+  motorControl(u[2], 2); // update Psi
+}
+
+void taskCurrentControllerPhi()
+{
+  motorControl(u[0], 0); // update Phi
+}
+
+void taskCurrentControllerTheta()
+{
+  motorControl(u[1], 1); // update Theta
+}
+
+void taskCurrentControllerPsi()
+{
+  motorControl(u[2], 2); // update Psi
 }
 
 void taskUpdateFullState()
@@ -412,7 +465,7 @@ void taskUpdateFullState()
   //  taskCalculateRPY_Rads();
   taskUpdatePlant();
   taskGetOmega();
-  taskUpdateLQR();
+  taskUpdateLQRAll();
   //  taskCurrentController();
 }
 

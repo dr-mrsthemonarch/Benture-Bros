@@ -19,7 +19,7 @@ float sensorDiff(float gain, float sensor1, float sensor2)
 float sensorMean(float gain, float sensorPos, float sensorNeg)
 {
   float sol;
-  sol = (sensorPos + gain * sensorNeg) * 0.5;
+  sol = (sensorPos + (gain * sensorNeg)) * 0.5;
   return sol;
 }
 
