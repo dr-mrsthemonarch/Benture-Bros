@@ -65,7 +65,7 @@ std::array<SensorCaller2, 6> mpu9250 = {
     SensorCaller2(200, 32, {0.9964, 0.9976, 0.9739, -0.0080, -0.0375, 0.0835}, {7.78, 27.29, -5.58}, {{{0.861, 0.067, -0.065}, {0.067, 1.255, -0.050}, {-0.065, -0.050, 0.936}}}),
     SensorCaller2(200, 25, {0.9978, 0.9986, 0.9773, -0.0880, -0.1338, -0.1203}, {20.67, 14.87, -23.49}, {{{1.01, 0.013, 0.028}, {0.013, 1.033, -0.009}, {0.028, -0.009, 0.959}}})};
 
-std::array<float, 3> offsetAngle = {-0.02,0.04, + 0.03};
+std::array<float, 4> offsetAngle = {-0.02, 0.04, 0.03, -M_2_SQRTPI};
 std::array<float, 3> phiRPY; // phi angle displacement
 std::array<float, 3> dotPhi; // phi angular velocity
 std::array<float, 3> thetaRPY;
@@ -74,10 +74,10 @@ std::array<float, 3> psiRPY;
 std::array<float, 3> dotPsi;
 std::array<float, 3> lambdaRPY;
 std::array<float, 3> dotLambda;
-std::array<float, 3> matPhi = {150, 25, 0.06};   // gain matrix
-std::array<float, 3> matTheta = {150, 25, 0.06}; // gain matrix
-std::array<float, 3> matPsi = {150, 25, 0.06};    // gain matrix
-std::array<float, 3> matLambda = {-20,-20,-0.02};   // gain matrix
+std::array<float, 3> matPhi = {150, 25, 0.06};      // gain matrix
+std::array<float, 3> matTheta = {-150, -25, -0.06};    // gain matrix
+std::array<float, 3> matPsi = {150, 25, 0.06};      // gain matrix
+std::array<float, 3> matLambda = {20, 40, 0.02}; // gain matrix
 std::array<float, 3> u;                             // motor input array
 std::array<float, 6> magnetic_field = {37.26, 34.86, 35.74, 34.18, 0, 31.86};
 std::array<float, 3> omega = {0, 0, 0}; // motor rad/s array
@@ -86,13 +86,12 @@ imu::Vector<3> vectorGyro;
 imu::Vector<3> vectorMag;
 imu::Vector<3> vectorAccel;
 
-
 Vector3f plantPhi(phiRPY[0], phiRPY[1], phiRPY[2]);
 Vector3f plantTheta(thetaRPY[0], thetaRPY[1], thetaRPY[2]);
 Vector3f plantPsi(psiRPY[0], psiRPY[1], psiRPY[2]);
-Vector3f plantLambda(lambdaRPY[0],lambdaRPY[1],lambdaRPY[2]);
+Vector3f plantLambda(lambdaRPY[0], lambdaRPY[1], lambdaRPY[2]);
 
 Vector3f lqrPhi(matPhi[0], matPhi[1], matPhi[2]);
 Vector3f lqrTheta(matTheta[0], matTheta[1], matTheta[2]);
 Vector3f lqrPsi(matPsi[0], matPsi[1], matPsi[2]);
-Vector3f lqrLambda(matLambda[0],matLambda[1],matLambda[2]);
+Vector3f lqrLambda(matLambda[0], matLambda[1], matLambda[2]);

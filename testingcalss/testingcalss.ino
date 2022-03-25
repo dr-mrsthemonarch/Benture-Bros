@@ -67,6 +67,7 @@ void taskCurrentControllerTheta();
 void taskCurrentControllerPsi();
 void taskPrintDebug();
 void taskPrintOmega();
+void taskPrintAll();
 void taskUpdateFullState();
 
 // Tasks to always run
@@ -76,13 +77,17 @@ Task blinker(500, TASK_FOREVER, &blinkCB);
 Task probeADC(5, TASK_FOREVER, &taskGetOmega);
 Task angleCalculateRPY_Rads(1, TASK_FOREVER, &taskCalculateRPY_Rads);
 Task angleCalculateEuler(1, TASK_FOREVER, &taskCalculateEuler);
-Task controller(5, TASK_FOREVER, &taskUpdateLQRAll);
+Task controlLQRAll(5, TASK_FOREVER, &taskUpdateLQRAll);
+Task controlLQRPhi(5, TASK_FOREVER, &taskUpdateLQRPhi);
+Task controlLQRTheta(5, TASK_FOREVER, &taskUpdateLQRTheta);
+Task controlLQRPsi(5, TASK_FOREVER, &taskUpdateLQRPsi);
 Task plantCalculate(1, TASK_FOREVER, &taskUpdatePlant);
 Task currentControllerAll(4, TASK_FOREVER, &taskCurrentControllerAll);
 Task currentControllerPhi(4, TASK_FOREVER, &taskCurrentControllerPhi);
 Task currentControllerTheta(4, TASK_FOREVER, &taskCurrentControllerTheta);
 Task currentControllerPsi(4, TASK_FOREVER, &taskCurrentControllerPsi);
 Task doAll(2, TASK_FOREVER, &taskUpdateFullState);
+Task printAll(15, TASK_FOREVER, &taskPrintAll);
 
 // Dynamic Tasks
 Task sensorReady(50, 50, &readyLED);
@@ -147,6 +152,29 @@ void taskReadSerial()
     cli.parse(stringRead);
   }
   parser();
+}
+
+void taskPrintAll()
+{
+  Serial.print(plantPhi(0), 4);
+  Serial.print(',');
+  Serial.print(plantTheta(0), 4);
+  Serial.print(',');
+  Serial.print(plantPsi(0), 4);
+  Serial.print(',');
+  Serial.print(plantLambda(0), 4);
+  Serial.print(',');
+  Serial.print(omega[0]); // phi
+  Serial.print(',');
+  Serial.print(omega[1]); // theta
+  Serial.print(',');
+  Serial.print(omega[2]); // psi,lambda
+  Serial.print(',');
+  Serial.print(u[0], 4);
+  Serial.print(',');
+  Serial.print(u[1], 4);
+  Serial.print(',');
+  Serial.println(u[2], 4);
 }
 
 void taskPrintU()
@@ -380,20 +408,20 @@ void taskCalculateEuler()
 
 void taskUpdatePlant()
 {
-  plantPhi(0) = phiRPY[0] + offsetAngle[0]; // Alpha Angle is required
-  plantPhi(1) = dotPhi[1]; // same as above
+  plantPhi(0) = (phiRPY[0] + offsetAngle[0]); // Alpha Angle is required
+  plantPhi(1) = dotPhi[1];                    // same as above
   plantPhi(2) = omega[0];
 
-  plantTheta(0) = -1 * thetaRPY[0] + offsetAngle[1];
-  plantTheta(1) = dotTheta[1];
+  plantTheta(0) = thetaRPY[0] - offsetAngle[1];
+  plantTheta(1) = -1 * dotTheta[1];
   plantTheta(2) = omega[1];
 
-  plantPsi(0) = -1 * psiRPY[0] + offsetAngle[2];
-  plantPsi(1) = dotPsi[1];
+  plantPsi(0) = (psiRPY[0] - offsetAngle[2]);
+  plantPsi(1) = -1 * dotPsi[1];
   plantPsi(2) = omega[2];
 
-  plantLambda(0) = lambdaRPY[0] - M_PI_2 + offsetAngle[3]; // add offset for bno starting angle
-  plantLambda(1) = dotLambda[2];
+  plantLambda(0) = (lambdaRPY[0] + offsetAngle[3]) * -1; // add offset for bno starting angle
+  plantLambda(1) = -1 * dotLambda[2];
   plantLambda(2) = omega[2];
 }
 
@@ -408,16 +436,15 @@ void taskGetOmega()
 
   // Update Omega Array
   omega[0] = pwmToRads(adc[2]); // motors matched to subsystem
-  omega[1] = pwmToRads(adc[0]);
-  omega[2] = pwmToRads(adc[1]);
+  omega[1] = -1 * pwmToRads(adc[0]);
+  omega[2] = -1 * pwmToRads(adc[1]);
 }
 
 void taskUpdateLQRAll()
 {
   u[0] = updateLQR(lqrPhi, plantPhi);
   u[1] = updateLQR(lqrTheta, plantTheta);
-  u[2] = updateLQR(lqrPsi, plantPsi);
-  // u[2] = updateLQR(lqrLambda, plantLambda);
+  u[2] = updateLQR(lqrLambda, plantLambda);
 }
 
 void taskUpdateLQRPhi()
@@ -427,46 +454,43 @@ void taskUpdateLQRPhi()
 
 void taskUpdateLQRTheta()
 {
-
   u[1] = updateLQR(lqrTheta, plantTheta);
 }
 
 void taskUpdateLQRPsi()
 {
-  u[2] = updateLQR(lqrPsi, plantPsi) ;
+  u[2] = updateLQR(lqrPsi, plantPsi);
 }
 
 void taskCurrentControllerAll()
 {
-  // motorControl(signal, channel)
-  motorControl(u[0], 0); // update Phi
-  motorControl(u[1], 1); // update Theta
-  motorControl(u[2], 2); // update Psi
+  // motorControl(float signal, int channel, int gain)
+  motorControl(u[0], 0, -1); // update Phi
+  motorControl(u[1], 1, -1); // update Theta
+  motorControl(u[2], 2, -1); // update Psi
 }
 
 void taskCurrentControllerPhi()
 {
-  motorControl(u[0], 0); // update Phi
+  motorControl(u[0], 0, -1); // update Phi
 }
 
 void taskCurrentControllerTheta()
 {
-  motorControl(u[1], 1); // update Theta
+  motorControl(u[1], 1, -1); // update Theta
 }
 
 void taskCurrentControllerPsi()
 {
-  motorControl(u[2], 2); // update Psi
+  motorControl(u[2], 2, -1); // update Psi
 }
 
 void taskUpdateFullState()
 {
   taskCalculateEuler();
-  //  taskCalculateRPY_Rads();
   taskUpdatePlant();
   taskGetOmega();
-  taskUpdateLQRAll();
-  //  taskCurrentController();
+//  taskUpdateLQRAll();
 }
 
 //=========== Task Helper Functions ===========

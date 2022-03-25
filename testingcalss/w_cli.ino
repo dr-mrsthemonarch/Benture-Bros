@@ -9,10 +9,12 @@ Command cmdGetGyro;
 Command cmdGetRPY;
 Command cmdGetMarg;
 Command cmdGetPlant;
-Command cmdLQR;
-Command cmdLQRPrint;
-Command modLQR;
+Command cmdLQROn;
+Command cmdLQR;      // Turn on motors
+Command cmdLQRPrint; // Print
+Command modLQR;      // Mod Gains
 Command cmdDebug;
+Command cmdprintAll;
 
 // https://github.com/SpacehuhnTech/SimpleCLI#examples
 // Commands must be initiated as global void with cmd* Prt, Bare Minimum example:
@@ -97,6 +99,27 @@ void lqrPrintCB(cmd *cmdPtr)
   }
 }
 
+void printAllCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+
+  bool printAllOn = argOn.isSet();
+  bool printAllOff = argOff.isSet();
+
+  if (printAllOn)
+  {
+    runner.addTask(printAll);
+    printAll.enable();
+  }
+  else if (printAllOff)
+  {
+    printAll.disable();
+    runner.deleteTask(printAll);
+  }
+}
+
 void lqrCB(cmd *cmdPtr)
 {
   Command cmd(cmdPtr);                               // get arguments
@@ -120,21 +143,25 @@ void lqrCB(cmd *cmdPtr)
       enableMotor();
       runner.addTask(currentControllerAll);
       currentControllerAll.enable();
+      Serial.println("Controller All On");
       break;
     case 1:
       enableMotor();
       runner.addTask(currentControllerPhi);
       currentControllerPhi.enable();
+      Serial.println("Controller Phi On");
       break;
     case 2:
       enableMotor();
       runner.addTask(currentControllerTheta);
       currentControllerTheta.enable();
+      Serial.print("Controller Theta On");
       break;
     case 3:
       enableMotor();
       runner.addTask(currentControllerPsi);
       currentControllerPsi.enable();
+      Serial.println("Controller Psi On");
       break;
     }
   }
@@ -146,21 +173,91 @@ void lqrCB(cmd *cmdPtr)
       disableMotor();
       currentControllerAll.disable();
       runner.deleteTask(currentControllerAll);
+      Serial.println("Controller All Off");
       break;
     case 1:
       disableMotor();
       currentControllerPhi.disable();
       runner.deleteTask(currentControllerPhi);
+      Serial.println("Controller Phi Off");
       break;
     case 2:
       disableMotor();
       currentControllerTheta.disable();
       runner.deleteTask(currentControllerTheta);
+      Serial.print("Controller Theta Off");
       break;
     case 3:
       disableMotor();
       currentControllerPsi.disable();
       runner.deleteTask(currentControllerPsi);
+      Serial.println("Controller Psi Off");
+      break;
+    }
+  }
+}
+
+void lqrStartCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr);                               // get arguments
+  Argument argOn = cmd.getArgument("e/nable,on");    // turn off printing
+  Argument argOff = cmd.getArgument("d/isable,off"); // turn on printing
+
+  Argument argSub = cmd.getArgument("s");
+  String subp = argSub.getValue();
+  int pi = subp.toInt();
+
+  bool lqrOn = argOn.isSet();
+  bool lqrOff = argOff.isSet();
+  if (lqrOn)
+  {
+    switch (pi)
+    {
+    case 0:
+      runner.addTask(controlLQRAll);
+      controlLQRAll.enable();
+      Serial.println("LQR All On");
+      break;
+    case 1:
+      runner.addTask(controlLQRPhi);
+      controlLQRPhi.enable();
+      Serial.println("LQR Phi On");
+      break;
+    case 2:
+      runner.addTask(controlLQRTheta);
+      controlLQRTheta.enable();
+      Serial.print("LQR Theta On");
+      break;
+    case 3:
+      runner.addTask(controlLQRPsi);
+      controlLQRPsi.enable();
+      Serial.println("LQR Psi On");
+      break;
+    }
+  }
+  else if (lqrOff)
+  {
+    switch (pi)
+    {
+    case 0:
+      controlLQRAll.disable();
+      runner.deleteTask(controlLQRAll);
+      Serial.println("LQR All Off");
+      break;
+    case 1:
+      controlLQRPhi.disable();
+      runner.deleteTask(controlLQRPhi);
+      Serial.println("LQR Phi Off");
+      break;
+    case 2:
+      controlLQRTheta.disable();
+      runner.deleteTask(controlLQRTheta);
+      Serial.print("LQR Theta Off");
+      break;
+    case 3:
+      controlLQRPsi.disable();
+      runner.deleteTask(controlLQRPsi);
+      Serial.println("LQR Psi Off");
       break;
     }
   }
@@ -292,24 +389,24 @@ void motorControlCB(cmd *cmdPtr)
     {
     case 1:
       enableMotor();
-      motorControl(driveCurrent, 0);
+      motorControl(driveCurrent, 0, -1);
       break;
 
     case 2:
       enableMotor();
-      motorControl(driveCurrent, 1);
+      motorControl(driveCurrent, 1, -1);
       break;
 
     case 3:
       enableMotor();
-      motorControl(driveCurrent, 2);
+      motorControl(driveCurrent, 2, -1);
       break;
 
     case 0:
       enableMotor();
-      motorControl(driveCurrent, 0);
-      motorControl(driveCurrent, 1);
-      motorControl(driveCurrent, 2);
+      motorControl(driveCurrent, 0, -1);
+      motorControl(driveCurrent, 1, -1);
+      motorControl(driveCurrent, 2, -1);
       break;
     }
 }

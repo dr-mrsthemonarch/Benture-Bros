@@ -59,11 +59,26 @@ inline void disableMotor()
   digitalWrite(enablePin, LOW);
 }
 
-void motorControl(float sgnl, int16_t channel)
+void motorControl(float sgnl, int16_t channel,int gain)
 {
   // Set motor current input
-  float pwm = ampsToPWM(sgnl);
-  ledcWrite(channel, pwm);
+  float amps = gain*sgnl;
+
+  if (amps >= 2.2)
+  {
+    float pwm = ampsToPWM(2.2); //current controller max amp limit
+    ledcWrite(channel, pwm);
+  }
+  else if (amps <= -2.2)
+  {
+    float pwm = ampsToPWM(-2.2); //current controller max amp limit
+    ledcWrite(channel, pwm);
+  }
+  else
+  {
+    float pwm = ampsToPWM(amps); //if not maxed out, use original amps
+    ledcWrite(channel, pwm);
+  }
 }
 
 float pwmToRads(float voltage)

@@ -47,12 +47,12 @@ void setup()
   cmdConverge = cli.addCommand("conv", convergeCB);
   cmdConverge.setDescription("Tests for converagance of sensor n");
 
-  cmdMotorPrint = cli.addCommand("motorp", motorPrintCB);
+  cmdMotorPrint = cli.addCommand("motorP", motorPrintCB);
   cmdMotorPrint.setDescription("Turn motors on or off, Print Angular Velocities");
   cmdMotorPrint.addFlagArgument("e/nable,on");
   cmdMotorPrint.addFlagArgument("d/isable,off");
 
-  cmdMotorState = cli.addCommand("motors", motorStateCB);
+  cmdMotorState = cli.addCommand("motorS", motorStateCB);
   cmdMotorState.setDescription("Turn motors on or off, Print Angular Velocities");
   cmdMotorState.addFlagArgument("e/nable,on");
   cmdMotorState.addFlagArgument("d/isable,off");
@@ -103,6 +103,18 @@ void setup()
   cmdLQRPrint.addFlagArgument("e/nable,on");
   cmdLQRPrint.addFlagArgument("d/isable,off");
 
+  cmdprintAll = cli.addCommand("printAll", printAllCB);
+  cmdprintAll.setDescription("Print All Output");
+  cmdprintAll.addFlagArgument("e/nable,on");
+  cmdprintAll.addFlagArgument("d/isable,off");
+
+  cmdLQROn = cli.addCommand("lqrOn", lqrStartCB);
+  cmdLQROn.setDescription("Turn on LQR Controllers, 0 All, 1 Phi, 2 Theta, 3 Psi");
+  cmdLQROn.addFlagArgument("e/nable,on");
+  cmdLQROn.addFlagArgument("d/isable,off");
+  cmdLQROn.addFlagArgument("c");
+  cmdLQROn.addArgument("s");
+
   cmdLQR = cli.addCommand("lqr", lqrCB);
   cmdLQR.setDescription("Turn on LQR Controllers, 0 All, 1 Phi, 2 Theta, 3 Psi");
   cmdLQR.addFlagArgument("e/nable,on");
@@ -132,11 +144,6 @@ void setup()
   //  runner.addTask(angleCalculateEuler);
   //  runner.addTask(plantCalculate);
 
-  //  runner.addTask(controller);
-//  runner.addTask(currentControllerAll);
-//  runner.addTask(currentControllerPhi);
-//  runner.addTask(currentControllerTheta);
-//  runner.addTask(currentControllerPsi);
   runner.addTask(probeADC);
   runner.addTask(doAll);
 
