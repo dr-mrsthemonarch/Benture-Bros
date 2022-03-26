@@ -14,7 +14,8 @@ Command cmdLQR;      // Turn on motors
 Command cmdLQRPrint; // Print
 Command modLQR;      // Mod Gains
 Command cmdDebug;
-Command cmdprintAll;
+Command cmdPrintAll;
+Command cmdSetOff;
 
 // https://github.com/SpacehuhnTech/SimpleCLI#examples
 // Commands must be initiated as global void with cmd* Prt, Bare Minimum example:
@@ -389,24 +390,24 @@ void motorControlCB(cmd *cmdPtr)
     {
     case 1:
       enableMotor();
-      motorControl(driveCurrent, 0, -1);
+      motorControl(driveCurrent, 0, 1);
       break;
 
     case 2:
       enableMotor();
-      motorControl(driveCurrent, 1, -1);
+      motorControl(driveCurrent, 1, 1);
       break;
 
     case 3:
       enableMotor();
-      motorControl(driveCurrent, 2, -1);
+      motorControl(driveCurrent, 2, 1);
       break;
 
     case 0:
       enableMotor();
-      motorControl(driveCurrent, 0, -1);
-      motorControl(driveCurrent, 1, -1);
-      motorControl(driveCurrent, 2, -1);
+      motorControl(driveCurrent, 0, 1);
+      motorControl(driveCurrent, 1, 1);
+      motorControl(driveCurrent, 2, 1);
       break;
     }
 }
@@ -882,5 +883,34 @@ void getPlantCB(cmd *cmdPtr)
       runner.deleteTask(printLambda);
       break;
     }
+  }
+}
+
+void offsetCB(cmd *cmdPtr)
+{
+  Command cmd(cmdPtr); // get arguments
+
+  Argument argSys = cmd.getArgument("s");
+  String angle = argSys.getValue();
+  int angleSelect = angle.toInt();
+
+  Argument argOffset = cmd.getArgument("o");
+  String offset = argOffset.getValue();
+  float offsetValue = offset.toFloat();
+
+  switch (angleSelect)
+  {
+  case 0:
+    offsetAngle[0] = offsetValue;
+    break;
+  case 1:
+    offsetAngle[1] = offsetValue;
+    break;
+  case 2:
+    offsetAngle[2] = offsetValue;
+    break;
+  case 3:
+    offsetAngle[3] = offsetValue;
+    break;
   }
 }

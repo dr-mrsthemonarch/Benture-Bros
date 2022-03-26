@@ -82,11 +82,11 @@ Task controlLQRPhi(5, TASK_FOREVER, &taskUpdateLQRPhi);
 Task controlLQRTheta(5, TASK_FOREVER, &taskUpdateLQRTheta);
 Task controlLQRPsi(5, TASK_FOREVER, &taskUpdateLQRPsi);
 Task plantCalculate(1, TASK_FOREVER, &taskUpdatePlant);
-Task currentControllerAll(4, TASK_FOREVER, &taskCurrentControllerAll);
-Task currentControllerPhi(4, TASK_FOREVER, &taskCurrentControllerPhi);
-Task currentControllerTheta(4, TASK_FOREVER, &taskCurrentControllerTheta);
-Task currentControllerPsi(4, TASK_FOREVER, &taskCurrentControllerPsi);
-Task doAll(2, TASK_FOREVER, &taskUpdateFullState);
+Task currentControllerAll(2, TASK_FOREVER, &taskCurrentControllerAll);
+Task currentControllerPhi(2, TASK_FOREVER, &taskCurrentControllerPhi);
+Task currentControllerTheta(2, TASK_FOREVER, &taskCurrentControllerTheta);
+Task currentControllerPsi(2, TASK_FOREVER, &taskCurrentControllerPsi);
+Task doAll(1, TASK_FOREVER, &taskUpdateFullState);
 Task printAll(15, TASK_FOREVER, &taskPrintAll);
 
 // Dynamic Tasks
@@ -186,14 +186,16 @@ void taskPrintU()
   Serial.println(u[2], 4);
 }
 
-void taskPrintPlant(const Vector3f &plant)
+void taskPrintPlant(const Vector3f &plant,int i)
 // vector indexing vector(i)
 {
   Serial.print(plant(0), 4);
   Serial.print(',');
   Serial.print(plant(1), 4);
   Serial.print(',');
-  Serial.println(plant(2), 4);
+  Serial.print(plant(2), 4);
+  Serial.print(',');
+  Serial.println(u[i], 4);
 }
 
 void taskPrint_Rads(int pin)
@@ -408,15 +410,15 @@ void taskCalculateEuler()
 
 void taskUpdatePlant()
 {
-  plantPhi(0) = (phiRPY[0] + offsetAngle[0]); // Alpha Angle is required
-  plantPhi(1) = dotPhi[1];                    // same as above
+  plantPhi(0) = -1 * (phiRPY[0] + offsetAngle[0]); // Alpha Angle is required
+  plantPhi(1) = -1 * dotPhi[1];                    // same as above
   plantPhi(2) = omega[0];
 
-  plantTheta(0) = thetaRPY[0] - offsetAngle[1];
+  plantTheta(0) = -1*(thetaRPY[0] - offsetAngle[1]);
   plantTheta(1) = -1 * dotTheta[1];
   plantTheta(2) = omega[1];
 
-  plantPsi(0) = (psiRPY[0] - offsetAngle[2]);
+  plantPsi(0) = -1*((psiRPY[0] - offsetAngle[2]));
   plantPsi(1) = -1 * dotPsi[1];
   plantPsi(2) = omega[2];
 
@@ -435,9 +437,9 @@ void taskGetOmega()
   adc[2] = readADC(3); // ADC 2 is dead on the logic board using ADCnumber 3
 
   // Update Omega Array
-  omega[0] = pwmToRads(adc[2]); // motors matched to subsystem
-  omega[1] = -1 * pwmToRads(adc[0]);
-  omega[2] = -1 * pwmToRads(adc[1]);
+  omega[0] = pwmToRads(adc[2]); // motors matched to subsystem motor 3 belongs to phi
+  omega[1] = pwmToRads(adc[0]);
+  omega[2] = pwmToRads(adc[1]);
 }
 
 void taskUpdateLQRAll()
@@ -465,24 +467,24 @@ void taskUpdateLQRPsi()
 void taskCurrentControllerAll()
 {
   // motorControl(float signal, int channel, int gain)
-  motorControl(u[0], 0, -1); // update Phi
-  motorControl(u[1], 1, -1); // update Theta
-  motorControl(u[2], 2, -1); // update Psi
+  motorControl(u[0], 0, 1); // update Phi
+  motorControl(u[1], 1, 1); // update Theta
+  motorControl(u[2], 2, 1); // update Psi
 }
 
 void taskCurrentControllerPhi()
 {
-  motorControl(u[0], 0, -1); // update Phi
+  motorControl(u[0], 0, 1); // update Phi
 }
 
 void taskCurrentControllerTheta()
 {
-  motorControl(u[1], 1, -1); // update Theta
+  motorControl(u[1], 1, 1); // update Theta
 }
 
 void taskCurrentControllerPsi()
 {
-  motorControl(u[2], 2, -1); // update Psi
+  motorControl(u[2], 2, 1); // update Psi
 }
 
 void taskUpdateFullState()
@@ -490,7 +492,7 @@ void taskUpdateFullState()
   taskCalculateEuler();
   taskUpdatePlant();
   taskGetOmega();
-//  taskUpdateLQRAll();
+  //  taskUpdateLQRAll();
 }
 
 //=========== Task Helper Functions ===========
@@ -743,20 +745,20 @@ void bnoPrintGyro()
 //========================== Plant Functions
 void plantPrintPhi()
 {
-  taskPrintPlant(plantPhi);
+  taskPrintPlant(plantPhi,0);
 }
 
 void plantPrintTheta()
 {
-  taskPrintPlant(plantTheta);
+  taskPrintPlant(plantTheta,1);
 }
 
 void plantPrintPsi()
 {
-  taskPrintPlant(plantPsi);
+  taskPrintPlant(plantPsi,2);
 }
 
 void plantPrintLambda()
 {
-  taskPrintPlant(plantLambda);
+  taskPrintPlant(plantLambda,2);
 }

@@ -2,7 +2,7 @@
 void setup()
 {
   // serial to display data
-  Serial.begin(115200);
+  Serial.begin(250000);
   while (!Serial)
   {
   }
@@ -103,10 +103,10 @@ void setup()
   cmdLQRPrint.addFlagArgument("e/nable,on");
   cmdLQRPrint.addFlagArgument("d/isable,off");
 
-  cmdprintAll = cli.addCommand("printAll", printAllCB);
-  cmdprintAll.setDescription("Print All Output");
-  cmdprintAll.addFlagArgument("e/nable,on");
-  cmdprintAll.addFlagArgument("d/isable,off");
+  cmdPrintAll = cli.addCommand("printAll", printAllCB);
+  cmdPrintAll.setDescription("Print All Output");
+  cmdPrintAll.addFlagArgument("e/nable,on");
+  cmdPrintAll.addFlagArgument("d/isable,off");
 
   cmdLQROn = cli.addCommand("lqrOn", lqrStartCB);
   cmdLQROn.setDescription("Turn on LQR Controllers, 0 All, 1 Phi, 2 Theta, 3 Psi");
@@ -133,6 +133,11 @@ void setup()
   cmdDebug.setDescription("Print various debug infos to Serial");
   cmdDebug.addFlagArgument("e/nable,on");
   cmdDebug.addFlagArgument("d/isable,off");
+
+  cmdSetOff = cli.addCommand("offset", offsetCB);
+  cmdSetOff.setDescription("Set offsets to Each subsystem 0 Phi, 1 Theta, 2 Psi, 3 Lambda");
+  cmdSetOff.addArgument("o");
+  cmdSetOff.addArgument("p");
 
   ///===================================================== Taskscheduler stuff
   runner.init();

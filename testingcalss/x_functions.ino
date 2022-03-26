@@ -79,6 +79,9 @@ void motorControl(float sgnl, int16_t channel,int gain)
     float pwm = ampsToPWM(amps); //if not maxed out, use original amps
     ledcWrite(channel, pwm);
   }
+  
+//     float pwm = ampsToPWM(amps); //if not maxed out, use original amps
+ //   ledcWrite(channel, pwm);
 }
 
 float pwmToRads(float voltage)
